@@ -1,79 +1,256 @@
-<h1><%= t("games.show.title") %></h1>
+<% content_for :title, @game.name.presence || t("games.show.title") %>
 
-<div id="game-info">
-  <p><strong><%= t("games.show.code_label") %>:</strong> <%= @game.code %></p>
-  <p><strong><%= t("games.show.status_label") %>:</strong> <span id="game-status"><%= t("statuses.game.#{@game.status}") %></span></p>
-  <p><strong><%= t("games.show.pattern_label") %>:</strong> <%= t("patterns.#{@game.pattern}") %></p>
-  <% if @game.name.present? %>
-    <p><strong><%= t("games.show.name_label") %>:</strong> <%= @game.name %></p>
-  <% end %>
-</div>
+<% drawn_numbers = @game.draws.order(:position).to_a %>
+<% drawn_set = drawn_numbers.map(&:number).to_set %>
+<% last_drawn = drawn_numbers.last %>
+<% recent_numbers = drawn_numbers.last(10).map(&:number) %>
 
-<% if @game.waiting? %>
-  <% if Current.host_of?(@game) %>
-    <div id="host-controls">
-      <p><%= t("games.show.waiting.host_message", code: @game.code) %></p>
-      <%= button_to t("games.show.waiting.start_button"), start_game_path(@game.code), method: :post %>
-    </div>
-  <% else %>
-    <div id="guest-waiting">
-      <p><%= t("games.show.waiting.guest_message") %></p>
-    </div>
-  <% end %>
-<% elsif @game.active? %>
-  <div id="active-game">
-    <% if Current.host_of?(@game) %>
-      <div id="host-controls">
-        <%= button_to t("games.show.waiting.draw_button"), game_draws_path(@game.code), method: :post %>
-        <%= button_to t("games.show.waiting.finish_button"), finish_game_path(@game.code), method: :post %>
-      </div>
-    <% end %>
-
-    <div id="draws">
-      <h2><%= t("games.show.active.drawn_numbers") %> (<%= @game.draws.count %>)</h2>
-      <ul>
-        <% @game.draws.order(:position).each do |draw| %>
-          <li><%= t("games.show.active.position_label", position: draw.position) %>: <strong><%= draw.number %></strong></li>
-        <% end %>
-      </ul>
-    </div>
-
-    <% if @card %>
-      <div id="player-card">
-        <h2><%= t("games.show.active.your_card") %></h2>
-        <table border="1">
-          <% @card.rows.each do |row| %>
-            <tr>
-              <% row.each do |cell| %>
-                <td><%= cell.to_s == "free" ? t("games.show.active.free_space") : cell %></td>
-              <% end %>
-            </tr>
-          <% end %>
-        </table>
-      </div>
-    <% end %>
-  </div>
-<% elsif @game.finished? %>
-  <div id="finished-game">
-    <h2><%= t("games.show.finished.title") %></h2>
+<%# ────────────────────────────────────────────────────────────── %>
+<%# FINISHED %>
+<%# ────────────────────────────────────────────────────────────── %>
+<% if @game.finished? %>
+  <section class="text-center space-y-6">
+    <header>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-rose-600">
+        <%= t("games.show.finished.title") %>
+      </h1>
+      <% if @game.name.present? %>
+        <p class="mt-2 text-slate-600"><%= @game.name %></p>
+      <% end %>
+      <p class="mt-1 text-sm text-slate-500">
+        <%= t("games.show.code_label") %>:
+        <span class="font-mono font-bold tracking-widest"><%= format_game_code(@game.code) %></span>
+      </p>
+    </header>
 
     <% if @wins&.any? %>
-      <div id="winners">
-        <h3><%= t("games.show.finished.winners") %></h3>
-        <ul>
+      <div id="winners" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-left">
+        <h3 class="text-lg font-semibold text-slate-800 mb-4">
+          <%= t("games.show.finished.winners") %>
+        </h3>
+        <ul class="space-y-3">
           <% @wins.each do |win| %>
-            <li><%= t("games.show.finished.card_number", id: win.card_id) %> - <%= t("games.show.finished.pattern_label", pattern: t("patterns.#{win.pattern}")) %> - <%= t("games.show.finished.confirmed_at", time: win.confirmed_at.strftime("%d/%m/%Y às %H:%M")) %></li>
+            <li class="flex items-center justify-between rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3">
+              <span class="font-medium text-emerald-900">
+                <%= t("games.show.winners.card_label", id: win.card_id) %>
+              </span>
+              <span class="text-sm text-emerald-700">
+                <%= human_pattern(win.pattern) %>
+              </span>
+            </li>
           <% end %>
         </ul>
       </div>
     <% else %>
-      <p><%= t("games.show.finished.no_winners") %></p>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <p class="text-slate-600"><%= t("games.show.finished.no_winners") %></p>
+      </div>
     <% end %>
-  </div>
-<% end %>
 
-<% if Current.guest? && @game.waiting? && !@card %>
-  <div id="join-game">
-    <%= button_to t("games.show.waiting.join_button"), game_cards_path(@game.code), method: :post %>
-  </div>
+    <div>
+      <%= link_to t("games.new.title"), root_path,
+            class: "inline-block rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold px-6 py-3 transition-colors" %>
+    </div>
+  </section>
+
+<%# ────────────────────────────────────────────────────────────── %>
+<%# WAITING %>
+<%# ────────────────────────────────────────────────────────────── %>
+<% elsif @game.waiting? %>
+  <% if Current.host_of?(@game) %>
+    <%# ── HOST WAITING ── %>
+    <section class="space-y-6">
+      <header class="text-center">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-rose-600">
+          <%= t("games.show.waiting.title") %>
+        </h1>
+        <% if @game.name.present? %>
+          <p class="mt-1 text-slate-600"><%= @game.name %></p>
+        <% end %>
+        <p class="mt-1 text-sm text-slate-500">
+          <span id="game-status"><%= human_game_status(@game.status) %></span>
+        </p>
+      </header>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 text-center space-y-6">
+        <div>
+          <p class="text-sm font-medium text-slate-500 mb-2">
+            <%= t("games.show.code_label") %>
+          </p>
+          <p id="game-code"
+             class="text-5xl sm:text-6xl font-mono font-extrabold tracking-widest text-slate-900 select-all"
+             data-clipboard-text="<%= @game.code %>">
+            <%= format_game_code(@game.code) %>
+          </p>
+        </div>
+
+        <div data-controller="clipboard" data-clipboard-text-value="<%= @game.code %>">
+          <button type="button"
+                  data-action="clipboard#copy"
+                  aria-label="<%= t('shared.copy') %>"
+                  class="w-full rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium py-3 px-4 transition-colors">
+            <%= t("shared.copy") %>
+          </button>
+          <p data-clipboard-target="feedback"
+             class="hidden mt-2 text-sm font-medium text-emerald-600">
+            <%= t("helpers.clipboard.copied") %>
+          </p>
+        </div>
+
+        <% share_url = game_url_for_sharing(@game) %>
+        <div data-controller="share"
+             data-share-title-value="<%= t('shared.share.title') %>"
+             data-share-text-value="<%= t('shared.share.text', code: @game.code, url: share_url) %>"
+             data-share-url-value="<%= share_url %>"
+             data-share-fallback-value="<%= t('helpers.share.fallback', code: @game.code) %>">
+          <button type="button"
+                  data-action="share#share"
+                  class="w-full rounded-lg bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-lg font-semibold py-4 px-6 transition-colors shadow-sm">
+            <%= t("helpers.share.button") %>
+          </button>
+          <p data-share-target="feedback"
+             class="hidden mt-2 text-sm font-medium text-emerald-600">
+            <%= t("helpers.clipboard.copied") %>
+          </p>
+        </div>
+
+        <div>
+          <p class="text-sm text-slate-500 mb-1"><%= t("games.show.share.url_label") %></p>
+          <p class="text-xs sm:text-sm font-mono text-slate-600 break-all select-all"><%= share_url %></p>
+        </div>
+
+        <div class="text-sm text-slate-500">
+          <%= t("games.show.waiting.guests_count", count: @game.cards.count) %>
+        </div>
+      </div>
+
+      <div id="host-controls" class="space-y-3">
+        <%= button_to t("games.show.waiting.start_button"), start_game_path(@game.code), method: :post,
+              class: "w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-lg font-semibold py-4 px-6 transition-colors shadow-sm" %>
+      </div>
+    </section>
+
+  <% elsif Current.guest? && @card %>
+    <%# ── GUEST WAITING (has card) ── %>
+    <section class="space-y-6 text-center">
+      <header>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-rose-600">
+          <%= @game.name.presence || t("games.show.title") %>
+        </h1>
+        <p class="mt-1 text-sm text-slate-500">
+          <span id="game-status"><%= human_game_status(@game.status) %></span>
+        </p>
+      </header>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <p class="text-slate-600"><%= t("games.show.waiting.guest_message") %></p>
+        <h2 class="text-lg font-semibold text-slate-800 mt-6 mb-4 text-center">
+          <%= t("games.show.active.your_card") %>
+        </h2>
+        <div class="mt-6">
+          <%= render "card", card: @card, drawn_set: drawn_set %>
+        </div>
+      </div>
+
+      <div>
+        <%= link_to t("shared.back"), root_path,
+              class: "inline-block rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium px-6 py-3 transition-colors" %>
+      </div>
+    </section>
+
+  <% else %>
+    <%# ── VISITOR / NO CARD ── %>
+    <section class="space-y-6 text-center">
+      <header>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-rose-600">
+          <%= @game.name.presence || t("games.show.title") %>
+        </h1>
+        <p class="mt-1 text-sm text-slate-500">
+          <span id="game-status"><%= human_game_status(@game.status) %></span>
+          · <%= t("games.show.code_label") %>:
+          <span class="font-mono font-bold tracking-widest"><%= format_game_code(@game.code) %></span>
+        </p>
+      </header>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <p class="text-slate-600"><%= t("games.show.waiting.no_card_yet") %></p>
+        <%= button_to t("games.show.waiting.join_button"), game_cards_path(@game.code), method: :post,
+              class: "w-full rounded-lg bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-lg font-semibold py-4 px-6 transition-colors shadow-sm" %>
+      </div>
+    </section>
+  <% end %>
+
+<%# ────────────────────────────────────────────────────────────── %>
+<%# ACTIVE %>
+<%# ────────────────────────────────────────────────────────────── %>
+<% elsif @game.active? %>
+  <section class="space-y-6">
+    <header class="flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <h1 class="text-xl sm:text-2xl font-extrabold text-rose-600 truncate">
+          <%= @game.name.presence || t("games.show.title") %>
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-500">
+          <span id="game-status"><%= human_game_status(@game.status) %></span>
+          · <%= t("games.show.code_label") %>:
+          <span class="font-mono font-bold tracking-widest"><%= format_game_code(@game.code) %></span>
+        </p>
+      </div>
+      <% if Current.host_of?(@game) %>
+        <div id="host-controls" class="flex gap-2">
+          <%= button_to t("games.show.waiting.finish_button"), finish_game_path(@game.code), method: :post,
+                class: "rounded-lg border border-rose-300 bg-white hover:bg-rose-50 text-rose-700 text-sm font-medium px-3 py-2 transition-colors" %>
+        </div>
+      <% end %>
+    </header>
+
+    <%# ── Last drawn ball + recent history ── %>
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-4">
+      <div class="flex flex-col items-center">
+        <div class="relative">
+          <div class="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-gradient-to-br from-rose-500 to-rose-700 flex items-center justify-center shadow-lg animate-fade-in">
+            <span class="text-5xl sm:text-6xl font-extrabold text-white">
+              <%= last_drawn ? last_drawn.number : "—" %>
+            </span>
+          </div>
+        </div>
+        <p class="mt-3 text-sm text-slate-500">
+          <%= t("games.show.active.drawn_numbers") %>
+          (<%= t("games.show.active.drawn_count", count: drawn_numbers.size) %>)
+        </p>
+      </div>
+
+      <% if recent_numbers.any? %>
+        <div class="flex flex-wrap gap-2 justify-center">
+          <% recent_numbers.each do |num| %>
+            <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-slate-100 text-slate-800 font-bold text-sm">
+              <%= num %>
+            </span>
+          <% end %>
+        </div>
+      <% end %>
+
+      <p class="text-center text-sm font-medium text-slate-600">
+        <%= t("games.show.active.pattern_status", pattern: human_pattern(@game.pattern)) %>
+      </p>
+    </div>
+
+    <%# ── Host controls ── %>
+    <% if Current.host_of?(@game) %>
+      <div id="host-controls" class="space-y-3">
+        <%= button_to t("games.show.waiting.draw_button"), game_draws_path(@game.code), method: :post,
+              class: "w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-lg font-semibold py-4 px-6 transition-colors shadow-sm" %>
+      </div>
+    <% end %>
+
+    <%# ── Guest card ── %>
+    <% if @card %>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6">
+        <h2 class="text-lg font-semibold text-slate-800 mb-4 text-center">
+          <%= t("games.show.active.your_card") %>
+        </h2>
+        <%= render "card", card: @card, drawn_set: drawn_set %>
+      </div>
+    <% end %>
+  </section>
 <% end %>
