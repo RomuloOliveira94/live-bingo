@@ -1,0 +1,79 @@
+<h1><%= t("games.show.title") %></h1>
+
+<div id="game-info">
+  <p><strong><%= t("games.show.code_label") %>:</strong> <%= @game.code %></p>
+  <p><strong><%= t("games.show.status_label") %>:</strong> <span id="game-status"><%= t("statuses.game.#{@game.status}") %></span></p>
+  <p><strong><%= t("games.show.pattern_label") %>:</strong> <%= t("patterns.#{@game.pattern}") %></p>
+  <% if @game.name.present? %>
+    <p><strong><%= t("games.show.name_label") %>:</strong> <%= @game.name %></p>
+  <% end %>
+</div>
+
+<% if @game.waiting? %>
+  <% if Current.host_of?(@game) %>
+    <div id="host-controls">
+      <p><%= t("games.show.waiting.host_message", code: @game.code) %></p>
+      <%= button_to t("games.show.waiting.start_button"), start_game_path(@game.code), method: :post %>
+    </div>
+  <% else %>
+    <div id="guest-waiting">
+      <p><%= t("games.show.waiting.guest_message") %></p>
+    </div>
+  <% end %>
+<% elsif @game.active? %>
+  <div id="active-game">
+    <% if Current.host_of?(@game) %>
+      <div id="host-controls">
+        <%= button_to t("games.show.waiting.draw_button"), game_draws_path(@game.code), method: :post %>
+        <%= button_to t("games.show.waiting.finish_button"), finish_game_path(@game.code), method: :post %>
+      </div>
+    <% end %>
+
+    <div id="draws">
+      <h2><%= t("games.show.active.drawn_numbers") %> (<%= @game.draws.count %>)</h2>
+      <ul>
+        <% @game.draws.order(:position).each do |draw| %>
+          <li><%= t("games.show.active.position_label", position: draw.position) %>: <strong><%= draw.number %></strong></li>
+        <% end %>
+      </ul>
+    </div>
+
+    <% if @card %>
+      <div id="player-card">
+        <h2><%= t("games.show.active.your_card") %></h2>
+        <table border="1">
+          <% @card.rows.each do |row| %>
+            <tr>
+              <% row.each do |cell| %>
+                <td><%= cell.to_s == "free" ? t("games.show.active.free_space") : cell %></td>
+              <% end %>
+            </tr>
+          <% end %>
+        </table>
+      </div>
+    <% end %>
+  </div>
+<% elsif @game.finished? %>
+  <div id="finished-game">
+    <h2><%= t("games.show.finished.title") %></h2>
+
+    <% if @wins&.any? %>
+      <div id="winners">
+        <h3><%= t("games.show.finished.winners") %></h3>
+        <ul>
+          <% @wins.each do |win| %>
+            <li><%= t("games.show.finished.card_number", id: win.card_id) %> - <%= t("games.show.finished.pattern_label", pattern: t("patterns.#{win.pattern}")) %> - <%= t("games.show.finished.confirmed_at", time: win.confirmed_at.strftime("%d/%m/%Y às %H:%M")) %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% else %>
+      <p><%= t("games.show.finished.no_winners") %></p>
+    <% end %>
+  </div>
+<% end %>
+
+<% if Current.guest? && @game.waiting? && !@card %>
+  <div id="join-game">
+    <%= button_to t("games.show.waiting.join_button"), game_cards_path(@game.code), method: :post %>
+  </div>
+<% end %>

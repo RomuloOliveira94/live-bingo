@@ -57,13 +57,13 @@ class GameTest < ActiveSupport::TestCase
     game1 = games(:one)
     game2 = Game.new(code: game1.code, host_session_id: "session123", status: :waiting, pattern: :line)
     assert_not game2.valid?
-    assert_includes game2.errors[:code], "has already been taken"
+    assert_includes game2.errors[:code], "já está em uso"
   end
 
   test "should require code length of 6" do
     game = Game.new(code: "ABC12", host_session_id: "session123", status: :waiting, pattern: :line)
     assert_not game.valid?
-    assert_includes game.errors[:code], "is the wrong length (should be 6 characters)"
+    assert_includes game.errors[:code], "não possui o tamanho correto (deve ser 6 caracteres)"
   end
 
   test "should require code format" do
@@ -75,7 +75,7 @@ class GameTest < ActiveSupport::TestCase
   test "should require host_session_id" do
     game = Game.new(code: "ABC123", status: :waiting, pattern: :line)
     assert_not game.valid?
-    assert_includes game.errors[:host_session_id], "can't be blank"
+    assert_includes game.errors[:host_session_id], "não pode ficar em branco"
   end
 
   test "should require status" do

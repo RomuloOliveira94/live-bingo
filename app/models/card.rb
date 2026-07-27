@@ -67,13 +67,13 @@ class Card < ApplicationRecord
     return if grid_data.blank?
 
     unless grid_data.is_a?(Array) && grid_data.size == 5
-      errors.add(:grid_data, "must be a 5x5 array")
+      errors.add(:grid_data, I18n.t("activerecord.errors.models.card.attributes.grid_data.invalid_structure"))
       return
     end
 
     grid_data.each_with_index do |row, r|
       unless row.is_a?(Array) && row.size == 5
-        errors.add(:grid_data, "row #{r} must have 5 elements")
+        errors.add(:grid_data, I18n.t("activerecord.errors.models.card.attributes.grid_data.invalid_row", row: r))
         return
       end
 
@@ -81,7 +81,7 @@ class Card < ApplicationRecord
         next if cell.to_s == "free"
 
         unless cell.is_a?(Integer)
-          errors.add(:grid_data, "cell [#{r}][#{c}] must be an integer or :free")
+          errors.add(:grid_data, I18n.t("activerecord.errors.models.card.attributes.grid_data.invalid_cell", row: r, col: c))
           return
         end
       end
@@ -90,7 +90,7 @@ class Card < ApplicationRecord
     # Check FREE is at center (2,2)
     center = grid_data[2][2]
     unless center.to_s == "free"
-      errors.add(:grid_data, "center cell [2][2] must be :free")
+      errors.add(:grid_data, I18n.t("activerecord.errors.models.card.attributes.grid_data.center_not_free"))
     end
   end
 

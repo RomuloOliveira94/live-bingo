@@ -21,3 +21,10 @@ Shoulda::Matchers.configure do |config|
     with.library :rails
   end
 end
+
+# Load support files
+Dir[Rails.root.join("test/support/**/*.rb")].each { |f| require f }
+
+class ActionDispatch::IntegrationTest
+  include SessionHelpers
+end
