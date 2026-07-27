@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  game: one
+  session_id: session_guest_1
+  grid_data: <%= [[1, 16, 31, 46, 61], [2, 17, 32, 47, 62], [3, 18, "free", 48, 63], [4, 19, 33, 49, 64], [5, 20, 34, 50, 65]].to_json %>
+
+two:
+  game: two
+  session_id: session_guest_2
+  grid_data: <%= [[6, 21, 35, 51, 66], [7, 22, 36, 52, 67], [8, 23, "free", 53, 68], [9, 24, 37, 54, 69], [10, 25, 38, 55, 70]].to_json %>
