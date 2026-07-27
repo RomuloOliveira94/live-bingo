@@ -1,0 +1,14 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  game: one
+  card: one
+  pattern: 0
+  status: 0
+
+two:
+  game: two
+  card: two
+  pattern: 1
+  status: 1
+  confirmed_at: 2026-07-27 19:17:34

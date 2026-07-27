@@ -65,4 +65,6 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+  # Matchers for testing Rails models, controllers, etc.
+  gem "shoulda-matchers", "~> 8.0"
 end
