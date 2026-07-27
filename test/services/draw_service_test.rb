@@ -81,4 +81,27 @@ class DrawServiceTest < ActiveSupport::TestCase
     assert win.present?, "Expected win to be created"
     assert_equal "pending", win.status
   end
+
+  test "rolls back draw when WinDetector raises" do
+    game = games(:two) # status: active
+    initial_draw_count = game.draws.count
+
+    # Override WinDetector.call to raise an exception
+    original_method = WinDetector.method(:call)
+    WinDetector.define_singleton_method(:call) do |_game, _draw|
+      raise "WinDetector exploded"
+    end
+
+    begin
+      assert_raises(RuntimeError) do
+        DrawService.call(game: game)
+      end
+
+      # Verify no draw was persisted (transaction rolled back)
+      assert_equal initial_draw_count, game.draws.count
+    ensure
+      # Restore original method
+      WinDetector.define_singleton_method(:call, original_method)
+    end
+  end
 end

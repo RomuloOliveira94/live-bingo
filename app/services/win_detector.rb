@@ -8,22 +8,22 @@ class WinDetector
 
   def call
     drawn_set = @game.draws.pluck(:number).to_set
-    cards = @game.cards.to_a
-    wins_created = []
+    wins_by_card = Win.where(game: @game, pattern: @game.pattern).group_by(&:card_id)
+    new_wins = []
 
-    cards.each do |card|
+    @game.cards.find_each do |card|
       next unless card.has_pattern?(@game.pattern, drawn_set)
 
-      existing_win = Win.find_by(game: @game, card: card, pattern: @game.pattern)
+      existing = wins_by_card[card.id]&.first
 
-      if existing_win
+      if existing
         # If existing win is pending or confirmed, skip
-        next if existing_win.pending? || existing_win.confirmed?
+        next if existing.pending? || existing.confirmed?
 
         # If existing win is cancelled, reactivate it
-        if existing_win.cancelled?
-          existing_win.update!(status: :pending)
-          wins_created << existing_win
+        if existing.cancelled?
+          existing.update!(status: :pending)
+          new_wins << existing
         end
       else
         # No existing win, create new one
@@ -33,10 +33,10 @@ class WinDetector
           pattern: @game.pattern,
           status: :pending
         )
-        wins_created << win
+        new_wins << win
       end
     end
 
-    wins_created
+    new_wins
   end
 end

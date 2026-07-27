@@ -18,10 +18,10 @@ class DrawService
     number = remaining.sample
     position = @game.draws.maximum(:position).to_i + 1
 
-    draw = @game.draws.create!(number: number, position: position)
-
-    WinDetector.call(@game, draw)
-
-    draw
+    ActiveRecord::Base.transaction do
+      draw = @game.draws.create!(number: number, position: position)
+      WinDetector.call(@game, draw)
+      draw
+    end
   end
 end
