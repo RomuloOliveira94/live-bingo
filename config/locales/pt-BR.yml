@@ -7,6 +7,7 @@ pt-BR:
     new:
       title: "Criar novo bingo"
       name_label: "Nome do bingo (opcional)"
+      name_placeholder: "Ex: Bingo da família"
       pattern_label: "Padrão de vitória"
       submit: "Criar bingo"
     create:
@@ -21,6 +22,10 @@ pt-BR:
         title: "Aguardando convidados"
         host_message: "Você é o dono. Compartilhe este código: %{code}"
         guest_message: "Aguardando o dono iniciar o jogo..."
+        guests_count:
+          zero: "Nenhum convidado ainda"
+          one: "1 convidado"
+          other: "%{count} convidados"
         start_button: "Começar bingo"
         draw_button: "Sortear número"
         finish_button: "Encerrar jogo"
@@ -28,9 +33,10 @@ pt-BR:
         join_button: "Entrar no bingo"
       active:
         drawn_numbers: "Números sorteados"
-        drawn_count: "(%{count})"
+        drawn_count: "%{count}"
         position_label: "Posição %{position}"
         last_drawn: "Último número sorteado: %{number}"
+        pattern_status: "Procurando: %{pattern}"
         your_card: "Sua cartela"
         no_card: "Você ainda não tem cartela."
         free_space: "LIVRE"
@@ -41,6 +47,20 @@ pt-BR:
         card_number: "Cartela #%{id}"
         pattern_label: "Padrão: %{pattern}"
         confirmed_at: "Confirmado em: %{time}"
+      share:
+        url_label: "Link para entrar"
+        copied_toast: "Código copiado!"
+      column_headers:
+        - "B"
+        - "I"
+        - "N"
+        - "G"
+        - "O"
+      card:
+        free_label: "★"
+      winners:
+        card_label: "Cartela #%{id}"
+        session_short: "...%{last4}"
 
   cards:
     create:
@@ -111,6 +131,13 @@ pt-BR:
       restrict_dependent_destroy:
         has_one: "Não é possível excluir o registro pois existe um %{record} dependente"
         has_many: "Não é possível excluir o registro pois existem %{record} dependentes"
+
+  helpers:
+    clipboard:
+      copied: "Copiado!"
+    share:
+      button: "Compartilhar"
+      fallback: "Copie o código: %{code}"
 
   shared:
     share:
