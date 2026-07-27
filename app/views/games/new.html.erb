@@ -1,0 +1,24 @@
+<h1><%= t("games.new.title") %></h1>
+
+<%= form_with url: games_path, method: :post, local: true do |f| %>
+  <div>
+    <%= f.label :name, t("games.new.name_label") %>
+    <%= f.text_field :name %>
+  </div>
+
+  <div>
+    <%= f.label :pattern, t("games.new.pattern_label") %>
+    <%= f.select :pattern, options_for_select([
+      [t("patterns.line"), "line"],
+      [t("patterns.column"), "column"],
+      [t("patterns.diagonal"), "diagonal"],
+      [t("patterns.corners"), "corners"],
+      [t("patterns.blackout"), "blackout"],
+      [t("patterns.x_pattern"), "x_pattern"]
+    ], "line") %>
+  </div>
+
+  <div>
+    <%= f.submit t("games.new.submit") %>
+  </div>
+<% end %>

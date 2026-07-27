@@ -1,0 +1,150 @@
+pt-BR:
+  app:
+    name: "Bingo"
+    tagline: "Bingo ao vivo, fácil de jogar"
+
+  games:
+    new:
+      title: "Criar novo bingo"
+      name_label: "Nome do bingo (opcional)"
+      pattern_label: "Padrão de vitória"
+      submit: "Criar bingo"
+    create:
+      success: "Bingo criado! Compartilhe o código com seus amigos."
+    show:
+      title: "Bingo"
+      code_label: "Código"
+      status_label: "Status"
+      pattern_label: "Padrão"
+      name_label: "Nome"
+      waiting:
+        title: "Aguardando convidados"
+        host_message: "Você é o dono. Compartilhe este código: %{code}"
+        guest_message: "Aguardando o dono iniciar o jogo..."
+        start_button: "Começar bingo"
+        draw_button: "Sortear número"
+        finish_button: "Encerrar jogo"
+        no_card_yet: "Você ainda não entrou neste bingo. Clique em entrar para participar."
+        join_button: "Entrar no bingo"
+      active:
+        drawn_numbers: "Números sorteados"
+        drawn_count: "(%{count})"
+        position_label: "Posição %{position}"
+        last_drawn: "Último número sorteado: %{number}"
+        your_card: "Sua cartela"
+        no_card: "Você ainda não tem cartela."
+        free_space: "LIVRE"
+      finished:
+        title: "Bingo encerrado!"
+        winners: "Vencedores"
+        no_winners: "Ninguém venceu desta vez."
+        card_number: "Cartela #%{id}"
+        pattern_label: "Padrão: %{pattern}"
+        confirmed_at: "Confirmado em: %{time}"
+
+  cards:
+    create:
+      success: "Você entrou no bingo!"
+    errors:
+      game_finished: "Este bingo já foi encerrado."
+      host_cannot_join: "O dono do bingo não pode entrar como convidado."
+
+  draws:
+    create:
+      success: "Número sorteado: %{number}"
+    errors:
+      game_not_active: "O bingo precisa estar ativo para sortear."
+      no_numbers_remaining: "Todos os 75 números já foram sorteados."
+
+  wins:
+    update:
+      confirmed: "Bingo confirmado! %{pattern_label}"
+      cancelled: "Vitória cancelada."
+
+  patterns:
+    line: "Linha"
+    column: "Coluna"
+    diagonal: "Diagonal"
+    corners: "Quatro cantos"
+    blackout: "Cartela cheia"
+    x_pattern: "Letra X"
+
+  statuses:
+    game:
+      waiting: "Aguardando"
+      active: "Em andamento"
+      finished: "Encerrado"
+    win:
+      pending: "Pendente"
+      confirmed: "Confirmado"
+      cancelled: "Cancelado"
+
+  errors:
+    not_host: "Apenas o dono do bingo pode fazer isso."
+    not_guest: "Você precisa entrar no bingo como convidado."
+    game_not_found: "Bingo não encontrado."
+    card_not_found: "Cartela não encontrada."
+    win_not_found: "Vitória não encontrada."
+    messages:
+      blank: "não pode ficar em branco"
+      taken: "já está em uso"
+      invalid: "não é válido"
+      too_short: "é muito curto (mínimo %{count} caracteres)"
+      too_long: "é muito longo (máximo %{count} caracteres)"
+      wrong_length: "não possui o tamanho correto (deve ser %{count} caracteres)"
+      not_a_number: "não é um número"
+      not_an_integer: "não é um número inteiro"
+      greater_than: "deve ser maior que %{count}"
+      greater_than_or_equal_to: "deve ser maior ou igual a %{count}"
+      less_than: "deve ser menor que %{count}"
+      less_than_or_equal_to: "deve ser menor ou igual a %{count}"
+      equal_to: "deve ser igual a %{count}"
+      between: "deve estar entre %{count} e %{max}"
+      present: "deve estar em branco"
+      accepted: "deve ser aceito"
+      empty: "não pode ficar vazio"
+      exclusion: "não está disponível"
+      inclusion: "não está incluído na lista"
+      confirmation: "não é igual a %{attribute}"
+      required: "é obrigatório"
+      record_invalid: "A validação falhou: %{errors}"
+      restrict_dependent_destroy:
+        has_one: "Não é possível excluir o registro pois existe um %{record} dependente"
+        has_many: "Não é possível excluir o registro pois existem %{record} dependentes"
+
+  shared:
+    share:
+      title: "Vamos jogar bingo!"
+      text: "Entre no meu bingo com o código %{code}: %{url}"
+    code_label: "Código"
+    back: "Voltar"
+    copy: "Copiar"
+    copied: "Copiado!"
+
+  activerecord:
+    attributes:
+      game:
+        name: "Nome"
+        code: "Código"
+        pattern: "Padrão de vitória"
+        status: "Status"
+        host_session_id: "Sessão do dono"
+      card:
+        grid_data: "Cartela"
+        session_id: "Sessão"
+      draw:
+        number: "Número"
+        position: "Posição"
+      win:
+        pattern: "Padrão"
+        status: "Status"
+        confirmed_at: "Confirmado em"
+    errors:
+      models:
+        card:
+          attributes:
+            grid_data:
+              invalid_structure: "deve ser uma matriz 5x5"
+              invalid_row: "linha %{row} deve ter 5 elementos"
+              invalid_cell: "célula [%{row}][%{col}] deve ser um inteiro ou :free"
+              center_not_free: "célula central [2][2] deve ser :free"

@@ -16,7 +16,7 @@ class DrawTest < ActiveSupport::TestCase
   test "should require number" do
     draw = Draw.new(game: games(:one), position: 1)
     assert_not draw.valid?
-    assert_includes draw.errors[:number], "can't be blank"
+    assert_includes draw.errors[:number], "não pode ficar em branco"
   end
 
   test "should require number to be integer" do
@@ -37,7 +37,7 @@ class DrawTest < ActiveSupport::TestCase
   test "should require position" do
     draw = Draw.new(game: games(:one), number: 42)
     assert_not draw.valid?
-    assert_includes draw.errors[:position], "can't be blank"
+    assert_includes draw.errors[:position], "não pode ficar em branco"
   end
 
   test "should require position to be integer" do

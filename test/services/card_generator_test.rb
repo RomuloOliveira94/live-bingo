@@ -86,7 +86,7 @@ class CardGeneratorTest < ActiveSupport::TestCase
 
   test "other columns have exactly 5 numbers" do
     grid = CardGenerator.call
-    [0, 1, 3, 4].each do |col_idx|
+    [ 0, 1, 3, 4 ].each do |col_idx|
       col = grid.map { |row| row[col_idx] }
       assert_equal 5, col.size
       assert col.all? { |c| c.is_a?(Integer) }
