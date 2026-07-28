@@ -28,26 +28,13 @@ class DrawService
 
   private
 
+  # Renders games/draw_broadcast.turbo_stream.erb — the same template
+  # GamesController#draw renders inline for its own actor (see that
+  # action's comment) — so guests and the host's own broadcast copy always
+  # get exactly the same set of updates.
   def broadcast_draw(draw)
-    Turbo::StreamsChannel.broadcast_update_to(
-      @game, target: "last-ball", partial: "games/last_ball", locals: { draw: draw }
-    )
-    Turbo::StreamsChannel.broadcast_update_to(
-      @game, target: "draw-history", partial: "games/draw_history",
-      locals: { draws: @game.draws.order(position: :desc).limit(5) }
-    )
-    Turbo::StreamsChannel.broadcast_update_to(
-      @game, target: "drawn-count", partial: "games/drawn_count", locals: { game: @game }
-    )
-    Turbo::StreamsChannel.broadcast_update_to(
-      @game, target: "board", partial: "games/board", locals: { game: @game }
-    )
-    # Keeps the host's draw button in sync (disabled + relabeled once all 75
-    # are drawn) now that GamesController#draw no longer does a full-page
-    # redirect on every draw — a guest's page never has a #draw-button
-    # element, so this is a no-op for them.
-    Turbo::StreamsChannel.broadcast_update_to(
-      @game, target: "draw-button", partial: "games/draw_button", locals: { game: @game }
+    Turbo::StreamsChannel.broadcast_render_to(
+      @game, template: "games/draw_broadcast", locals: { game: @game, draw: draw }
     )
   end
 end

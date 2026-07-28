@@ -22,17 +22,33 @@ import { Controller } from "@hotwired/stimulus"
 //
 // The revealed number always comes from the server's own broadcast — the
 // flicker is purely decorative.
+//
+// Two things guarantee this spin always reaches a terminal state even when
+// the "last-ball" stream above never arrives:
+//
+//   - GamesController#draw renders its own turbo_stream response inline for
+//     the actor (in addition to broadcasting to everyone else), so the
+//     draw's own click no longer depends on a live Action Cable connection
+//     at all — see its comment. Error responses (game not active / no
+//     numbers left) include a "last-ball" update too, purely so this
+//     controller's own interception logic settles the spin instead of
+//     leaving it running with nothing to reveal.
+//   - watchdogValue below is the last-resort net for the truly dead-cable-
+//     AND-dead-request case: if nothing has ended the spin within that
+//     window, force it.
 export default class extends Controller {
   static targets = [ "cage", "ring", "letter", "number", "button" ]
   static values = {
     minDuration: { type: Number, default: 900 },
-    flickerInterval: { type: Number, default: 70 }
+    flickerInterval: { type: Number, default: 70 },
+    watchdog: { type: Number, default: 6000 }
   }
 
   connect() {
     this.spinning = false
     this.startedAt = 0
     this.flickerTimer = null
+    this.watchdogTimer = null
     this.beforeStreamRenderListener = this.holdBeforeStreamRender.bind(this)
     document.addEventListener("turbo:before-stream-render", this.beforeStreamRenderListener)
   }
@@ -40,6 +56,7 @@ export default class extends Controller {
   disconnect() {
     document.removeEventListener("turbo:before-stream-render", this.beforeStreamRenderListener)
     this.stopFlicker()
+    this.disarmWatchdog()
   }
 
   // Host click — bound to turbo:submit-start on the wrapping element.
@@ -101,6 +118,7 @@ export default class extends Controller {
     if (this.hasRingTarget) this.ringTarget.classList.remove("invisible")
     if (this.hasButtonTarget) this.buttonTarget.disabled = true
     this.startFlicker()
+    this.armWatchdog()
     window.dispatchEvent(new CustomEvent("bingo:spin-start"))
   }
 
@@ -112,12 +130,27 @@ export default class extends Controller {
   // settled, leaving a clickable-but-mislabeled button after ball 75 (see
   // _draw_button.html.erb for the data-spin-all-drawn marker itself).
   endSpin() {
+    this.disarmWatchdog()
     this.spinning = false
     this.stopFlicker()
     if (this.hasCageTarget) this.cageTarget.classList.remove("is-spinning")
     if (this.hasButtonTarget && this.buttonTarget.dataset.spinAllDrawn !== "true") {
       this.buttonTarget.disabled = false
     }
+  }
+
+  // Last-resort recovery for a spin that never reaches a "last-ball" stream
+  // at all — a dead Action Cable connection AND a request that never comes
+  // back (hung, dropped mid-flight). Cleared by endSpin whenever the spin
+  // does end normally, so this never fires on the happy path.
+  armWatchdog() {
+    this.disarmWatchdog()
+    this.watchdogTimer = setTimeout(() => this.endSpin(), this.watchdogValue)
+  }
+
+  disarmWatchdog() {
+    if (this.watchdogTimer) clearTimeout(this.watchdogTimer)
+    this.watchdogTimer = null
   }
 
   startFlicker() {

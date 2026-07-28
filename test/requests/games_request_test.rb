@@ -61,11 +61,18 @@ class GamesRequestTest < ActionDispatch::IntegrationTest
     assert_equal 1, draw.position
   end
 
-  test "host can draw number (turbo_stream format responds with no content, not a redirect)" do
+  test "host can draw number (turbo_stream format renders the draw's own updates inline, not a redirect)" do
     # This is what a real button_to click actually sends (Turbo adds the
     # turbo-stream mime type to the Accept header for any non-safe form
     # submission) — see GamesController#draw's comment for why a redirect
     # here broke the draw animation/sound for the host.
+    #
+    # It used to respond :no_content, relying entirely on DrawService's own
+    # Action Cable broadcast to update the actor's own DOM — leaving the
+    # actor's own spin permanently stuck whenever that broadcast never
+    # arrived (dead cable). It now renders the same 5 updates inline, so the
+    # actor's own click settles regardless of cable state (see
+    # games/draw_broadcast.turbo_stream.erb).
     game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
     game.update!(status: :active, started_at: Time.current)
     sign_in_as_host(game)
@@ -74,8 +81,13 @@ class GamesRequestTest < ActionDispatch::IntegrationTest
       post draw_game_path(code: game.code), headers: { "Accept" => "text/vnd.turbo-stream.html" }
     end
 
-    assert_response :no_content
-    assert_empty response.body
+    assert_response :success
+    assert_equal Mime[:turbo_stream], response.media_type
+
+    document = Nokogiri::HTML5.parse(response.body)
+    targets = document.css("turbo-stream").map { |stream| stream["target"] }
+    assert_equal %w[last-ball draw-history drawn-count board draw-button].sort, targets.sort
+    assert document.css('turbo-stream[target="last-ball"]').all? { |stream| stream["action"] == "update" }
   end
 
   test "draw on waiting game rejected (turbo_stream format still surfaces the flash, without redirecting)" do
@@ -88,6 +100,23 @@ class GamesRequestTest < ActionDispatch::IntegrationTest
     assert_equal Mime[:turbo_stream], response.media_type
     assert_match I18n.t("draws.errors.game_not_active"), response.body
     assert_match(/target="flash"/, response.body)
+  end
+
+  # Regression: an error response used to only ever touch "flash" — with no
+  # "last-ball" update, spin_controller.js's turbo:before-stream-render
+  # listener (the only thing that ever calls endSpin) never fired, so a
+  # rejected draw left the spin animation running forever with nothing to
+  # reveal and the button stuck disabled.
+  test "a rejected draw's turbo_stream response also updates last-ball, so the spin animation can settle" do
+    game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
+    sign_in_as_host(game)
+
+    post draw_game_path(code: game.code), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    document = Nokogiri::HTML5.parse(response.body)
+    targets = document.css("turbo-stream").map { |stream| stream["target"] }
+    assert_includes targets, "last-ball"
   end
 
   test "non-host cannot draw" do

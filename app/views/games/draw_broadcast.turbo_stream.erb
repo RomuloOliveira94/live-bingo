@@ -1,0 +1,23 @@
+<%# The full set of DOM updates a successful draw produces. Rendered from
+  two places, deliberately kept as one file so they can never drift apart:
+
+    - DrawService#broadcast_draw, via Turbo::StreamsChannel.broadcast_render_to
+      — delivered over Action Cable to every subscriber (host and guests).
+    - GamesController#draw, rendered directly as the HTTP response body for
+      the draw's own actor — see that action's comment for why: it must not
+      depend on a live cable connection to see its own ball land.
+
+  Applying both is safe: every action below is an idempotent `update`, so
+  the actor ends up applying the same content twice (once from its own
+  response, once again a moment later from the broadcast) with no visible
+  difference.
+  Locals:
+    game - Game instance
+    draw - Draw instance (the one just created)
+%>
+<%= turbo_stream.update("last-ball", partial: "games/last_ball", locals: { draw: draw }) %>
+<%= turbo_stream.update("draw-history", partial: "games/draw_history",
+    locals: { draws: game.draws.order(position: :desc).limit(5) }) %>
+<%= turbo_stream.update("drawn-count", partial: "games/drawn_count", locals: { game: game }) %>
+<%= turbo_stream.update("board", partial: "games/board", locals: { game: game }) %>
+<%= turbo_stream.update("draw-button", partial: "games/draw_button", locals: { game: game }) %>

@@ -40,16 +40,24 @@ class GamesController < ApplicationController
   end
 
   def draw
-    DrawService.call(game: @game)
+    draw = DrawService.call(game: @game)
     # No redirect here on purpose: a full-page redirect was the host's own
     # browser tearing down the spin animation and pre-empting the draw sound
     # before either could run (see spin_controller.js, draw_sound_controller.js).
-    # The host is subscribed to the same turbo_stream_from @game as every
-    # guest (see show.html.erb), so DrawService's own broadcast already
-    # updates their DOM — responding with no content lets Turbo settle the
-    # form submission in place instead of navigating anywhere.
+    #
+    # The turbo_stream branch renders the exact same updates DrawService's
+    # own broadcast sends to every guest (see games/draw_broadcast.turbo_stream.erb)
+    # directly as THIS response's body, instead of :no_content. Every action
+    # in there is an idempotent `update`, so applying it here and again a
+    # moment later from the broadcast is harmless — but rendering it here
+    # means the host's own click reveals its ball from the HTTP response
+    # alone, with no dependency on a live Action Cable connection. Before
+    # this, a dead cable between "the server saved the draw" and "the
+    # broadcast reaches this browser" left the spin animation running
+    # forever with nothing to reveal (see spin_controller.js's watchdog for
+    # the last-resort net on top of this).
     respond_to do |format|
-      format.turbo_stream { head :no_content }
+      format.turbo_stream { render template: "games/draw_broadcast", locals: { game: @game, draw: draw } }
       format.html { redirect_to game_path(code: @game.code) }
     end
   rescue DrawService::GameNotActive
@@ -82,10 +90,21 @@ class GamesController < ApplicationController
   # stale page or a race between two draws can still hit it, and it must
   # surface the same flash message whether or not Turbo intercepted the
   # request.
+  #
+  # Also re-renders "last-ball" with the current (unchanged) last draw —
+  # not because the ball changed, but because that's the same target
+  # spin_controller.js's turbo:before-stream-render listener already
+  # intercepts to settle the spin animation. Without it, a rejected draw
+  # left the spin running forever: it only ever started in response to a
+  # successful draw's "last-ball" update, and an error response never sent
+  # one.
   def respond_with_draw_error(message)
     respond_to do |format|
       format.turbo_stream do
-        render turbo_stream: turbo_stream.update("flash", partial: "layouts/flash", locals: { notice: nil, alert: message })
+        render turbo_stream: [
+          turbo_stream.update("flash", partial: "layouts/flash", locals: { notice: nil, alert: message }),
+          turbo_stream.update("last-ball", partial: "games/last_ball", locals: { draw: @game.draws.order(position: :desc).first })
+        ]
       end
       format.html { redirect_to game_path(code: @game.code), alert: message }
     end
