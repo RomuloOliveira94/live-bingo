@@ -2,17 +2,34 @@ pt-BR:
   app:
     name: "Bingo"
     tagline: "Sorteador de bingo ao vivo"
+    wordmark: "BINGO AO VIVO"
+
+  nav:
+    step_label:
+      home: "Passo 1 de 3"
+      enter: "Entrar"
+      share: "Passo 2 de 3"
+      live: "Sorteio"
 
   pages:
     home:
+      heading_line1: "Crie uma sala"
+      heading_line2: "de bingo"
+      subtitle: "Crie uma partida e receba um código para compartilhar — ou entre em uma sala existente."
       create: "Criar bingo"
       enter: "Entrar com código"
     enter:
       title: "Entrar em um bingo"
+      heading_line1: "Entrar em"
+      heading_line2: "um bingo"
+      subtitle: "Digite o código que o organizador compartilhou com você."
       code_label: "Código do bingo"
+      code_placeholder: "AB1-23C"
+      code_invalid: "Código inválido — confira com o organizador."
       submit: "Entrar na sala"
+      create_instead: "Quero criar um bingo"
     join:
-      not_found: "Código não encontrado. Verifique e tente novamente."
+      not_found: "Código inválido — confira com o organizador."
 
   games:
     show:
@@ -23,63 +40,44 @@ pt-BR:
       waiting:
         visitor_message: "Aguardando o dono iniciar o jogo..."
         start_button: "Iniciar sorteio"
+        players_hint: "Os jogadores aparecem aqui em tempo real assim que entram."
+        eyebrow: "Sala criada"
+        heading: "Chame a galera"
         players_label:
-          zero: "Ninguém na sala ainda"
-          one: "1 pessoa esperada"
-          other: "%{count} pessoas esperadas"
+          one: "jogador na sala"
+          other: "jogadores na sala"
+        code_eyebrow: "Código de acesso"
       active:
+        status_line: "Sala %{code} · ao vivo"
         draw_button: "Sortear bola"
-        drawing: "Sorteando..."
+        drawing: "Sorteando…"
+        all_drawn: "Todas as bolas sorteadas"
         restart_button: "Reiniciar partida"
-        no_draws_yet: "Aguardando primeiro sorteio"
+        recent_label: "Últimas"
+        board_label: "Cartela geral"
+        count_label: "%{drawn} / 75"
       finished:
         message: "Este bingo foi encerrado."
       share:
-        url_label: "Link para entrar"
-      viewer_count:
-        zero: "Ninguém assistindo"
-        one: "1 pessoa assistindo"
-        other: "%{count} pessoas assistindo"
-      viewer_count_label:
-        zero: "esperada"
-        one: "esperada"
-        other: "esperadas"
-      drawn_count:
-        zero: "Nenhuma bola sorteada"
-        one: "1 bola sorteada"
-        other: "%{count} bolas sorteadas"
-
-  games.errors:
-    game_not_active: "O bingo precisa estar ativo."
+        copy_code: "Copiar código"
+        copy_code_done: "Código copiado"
+        share_invite_desktop: "Compartilhar convite"
+        share_invite_mobile: "Compartilhar"
+        payload_title: "Bingo ao vivo"
+        payload_body: "Entre no meu bingo ao vivo com o código %{code}"
+    errors:
+      game_not_active: "O bingo precisa estar ativo."
 
   draws:
     errors:
       game_not_active: "O bingo precisa estar ativo para sortear."
       no_numbers_remaining: "Todos os 75 números já foram sorteados."
 
-  statuses:
-    game:
-      waiting: "Aguardando"
-      active: "Em andamento"
-      finished: "Encerrado"
-
-  errors:
-    not_host: "Apenas o dono do bingo pode fazer isso."
-    game_not_found: "Bingo não encontrado."
-
   helpers:
     clipboard:
-      copied: "Copiado!"
+      prompt: "Copie:"
     share:
-      button: "Compartilhar"
-      title: "Vamos jogar bingo!"
-      text: "Entre no meu bingo com o código %{code}"
-      fallback: "Copie o código: %{code}"
-
-  shared:
-    code_label: "Código"
-    copy: "Copiar"
-    copied: "Copiado!"
+      prompt: "Copie o link:"
 
   activerecord:
     attributes:

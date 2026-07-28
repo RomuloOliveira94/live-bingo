@@ -1,19 +1,35 @@
 en:
-  hello: "Hello world"
   app:
     name: "Bingo"
     tagline: "Live bingo draw"
+    wordmark: "LIVE BINGO"
+
+  nav:
+    step_label:
+      home: "Step 1 of 3"
+      enter: "Join"
+      share: "Step 2 of 3"
+      live: "Draw"
 
   pages:
     home:
+      heading_line1: "Create a bingo"
+      heading_line2: "room"
+      subtitle: "Create a game and get a code to share — or join an existing room."
       create: "Create bingo"
-      enter: "Enter with code"
+      enter: "Join with code"
     enter:
       title: "Join a bingo"
+      heading_line1: "Join a"
+      heading_line2: "bingo"
+      subtitle: "Enter the code the organizer shared with you."
       code_label: "Bingo code"
+      code_placeholder: "AB1-23C"
+      code_invalid: "Invalid code — check with the organizer."
       submit: "Enter room"
+      create_instead: "I want to create a bingo"
     join:
-      not_found: "Code not found. Please check and try again."
+      not_found: "Invalid code — check with the organizer."
 
   games:
     show:
@@ -24,60 +40,41 @@ en:
       waiting:
         visitor_message: "Waiting for the host to start the game..."
         start_button: "Start draw"
+        players_hint: "Players appear here in real time as they join."
+        eyebrow: "Room created"
+        heading: "Call the crowd"
         players_label:
-          zero: "No one in the room yet"
-          one: "1 person waiting"
-          other: "%{count} people waiting"
+          one: "player in the room"
+          other: "players in the room"
+        code_eyebrow: "Access code"
       active:
+        status_line: "Room %{code} · live"
         draw_button: "Draw ball"
-        drawing: "Drawing..."
+        drawing: "Drawing…"
+        all_drawn: "All balls drawn"
         restart_button: "Restart game"
-        no_draws_yet: "Waiting for first draw"
+        recent_label: "Recent"
+        board_label: "Full card"
+        count_label: "%{drawn} / 75"
       finished:
         message: "This bingo has ended."
       share:
-        url_label: "Join link"
-      viewer_count:
-        zero: "No one watching"
-        one: "1 person watching"
-        other: "%{count} people watching"
-      viewer_count_label:
-        zero: "waiting"
-        one: "waiting"
-        other: "waiting"
-      drawn_count:
-        zero: "No balls drawn"
-        one: "1 ball drawn"
-        other: "%{count} balls drawn"
-
-  games.errors:
-    game_not_active: "Bingo must be active."
+        copy_code: "Copy code"
+        copy_code_done: "Code copied"
+        share_invite_desktop: "Share invite"
+        share_invite_mobile: "Share"
+        payload_title: "Live bingo"
+        payload_body: "Join my live bingo with code %{code}"
+    errors:
+      game_not_active: "Bingo must be active."
 
   draws:
     errors:
       game_not_active: "Bingo must be active to draw."
       no_numbers_remaining: "All 75 numbers have been drawn."
 
-  statuses:
-    game:
-      waiting: "Waiting"
-      active: "In progress"
-      finished: "Finished"
-
-  errors:
-    not_host: "Only the bingo host can do that."
-    game_not_found: "Bingo not found."
-
   helpers:
     clipboard:
-      copied: "Copied!"
+      prompt: "Copy:"
     share:
-      button: "Share"
-      title: "Let's play bingo!"
-      text: "Join my bingo with code %{code}"
-      fallback: "Copy the code: %{code}"
-
-  shared:
-    code_label: "Code"
-    copy: "Copy"
-    copied: "Copied!"
+      prompt: "Copy the link:"
