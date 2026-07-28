@@ -9,25 +9,30 @@ en:
       create: "Create bingo"
       enter: "Enter with code"
     enter:
-      title: "Join bingo"
+      title: "Join a bingo"
       code_label: "Bingo code"
-      submit: "Enter"
+      submit: "Enter room"
     join:
       not_found: "Code not found. Please check and try again."
 
   games:
     show:
       title: "Bingo"
-      finish_button: "Finish"
+      finish_button: "Finish bingo"
       confirm_finish: "Are you sure you want to finish? This cannot be undone."
       confirm_restart: "Restart will clear all drawn numbers. Continue?"
       waiting:
         visitor_message: "Waiting for the host to start the game..."
-        start_button: "Start bingo"
+        start_button: "Start draw"
+        players_label:
+          zero: "No one in the room yet"
+          one: "1 person waiting"
+          other: "%{count} people waiting"
       active:
-        draw_button: "Draw number"
-        restart_button: "Restart"
-        no_draws_yet: "No numbers drawn yet."
+        draw_button: "Draw ball"
+        drawing: "Drawing..."
+        restart_button: "Restart game"
+        no_draws_yet: "Waiting for first draw"
       finished:
         message: "This bingo has ended."
       share:
@@ -36,10 +41,14 @@ en:
         zero: "No one watching"
         one: "1 person watching"
         other: "%{count} people watching"
+      viewer_count_label:
+        zero: "waiting"
+        one: "waiting"
+        other: "waiting"
       drawn_count:
-        zero: "No numbers drawn"
-        one: "1 number drawn"
-        other: "%{count} numbers drawn"
+        zero: "No balls drawn"
+        one: "1 ball drawn"
+        other: "%{count} balls drawn"
 
   games.errors:
     game_not_active: "Bingo must be active."

@@ -1,21 +1,62 @@
 @import "tailwindcss";
 
+@theme {
+  --color-bingo-bg: #ffffff;
+  --color-bingo-surface: #f7f7f6;
+  --color-bingo-line: #e6e6e4;
+  --color-bingo-fg: #141414;
+  --color-bingo-muted: #828280;
+  --color-bingo-cage: #fbfbfa;
+  --color-bingo-red: #141414;
+  --color-bingo-on-red: #ffffff;
+  --color-bingo-red-soft: #f2f2f0;
+}
+
+@layer base {
+  body {
+    font-family: 'Jost', 'Futura', system-ui, sans-serif;
+  }
+}
+
 @layer utilities {
-  @keyframes fade-in {
-    0% { opacity: 0; transform: scale(0.5); }
-    100% { opacity: 1; transform: scale(1); }
+  /* Grid 15 columns for 75-number bingo board */
+  .grid-cols-15 {
+    grid-template-columns: repeat(15, minmax(0, 1fr));
   }
 
-  .animate-fade-in {
-    animation: fade-in 0.3s ease-out;
+  /* Animations from design doc */
+  @keyframes ballShake {
+    0%   { transform: translate(0, 0) rotate(0deg); }
+    20%  { transform: translate(-10px, -14px) rotate(-16deg); }
+    40%  { transform: translate(12px, 8px) rotate(14deg); }
+    60%  { transform: translate(-8px, 10px) rotate(-10deg); }
+    80%  { transform: translate(10px, -8px) rotate(12deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
   }
 
-  @keyframes pulse-soft {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
+  @keyframes ballPop {
+    0%   { transform: scale(0.72); opacity: 0; }
+    60%  { transform: scale(1.06); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
   }
 
-  .animate-pulse-soft {
-    animation: pulse-soft 2s ease-in-out infinite;
+  @keyframes orbit {
+    to { transform: rotate(360deg); }
   }
+
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.35; transform: scale(0.8); }
+  }
+
+  @keyframes pulseRing {
+    0%   { box-shadow: 0 0 0 0 rgba(20, 20, 20, 0.20); }
+    100% { box-shadow: 0 0 0 26px rgba(20, 20, 20, 0); }
+  }
+
+  .animate-ball-shake { animation: ballShake 0.5s ease-in-out; }
+  .animate-ball-pop   { animation: ballPop 0.4s ease-out; }
+  .animate-orbit      { animation: orbit 8s linear infinite; }
+  .animate-live-pulse { animation: livePulse 1.4s ease-in-out infinite; }
+  .animate-pulse-ring { animation: pulseRing 1.6s ease-out infinite; }
 }

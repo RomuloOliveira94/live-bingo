@@ -1,71 +1,33 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["feedback"]
   static values = {
-    title: String,
-    text: String,
     url: String,
-    fallback: String,
-    feedbackTimeout: { type: Number, default: 2000 }
+    title: String,
+    text: String
   }
 
   async share(event) {
-    event.preventDefault()
+    if (event) event.preventDefault()
 
-    const shareData = {
-      title: this.titleValue || "",
-      text: this.textValue || "",
-      url: this.urlValue || ""
-    }
-
-    if (navigator.canShare && navigator.canShare(shareData)) {
+    if (navigator.share) {
       try {
-        await navigator.share(shareData)
+        await navigator.share({ title: this.titleValue, text: this.textValue, url: this.urlValue })
         return
-      } catch (err) {
-        // User cancelled or share failed — fall through to copy
-        if (err.name === "AbortError") return
+      } catch (e) {
+        if (e.name === "AbortError") return
       }
     }
 
-    // Fallback: copy URL to clipboard
-    const toCopy = this.urlValue || this.fallbackValue || ""
-    if (toCopy) {
-      await this._copyToClipboard(toCopy)
-      this._showFeedback()
-    }
+    await this.fallbackCopy()
   }
 
-  _copyToClipboard(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-      return navigator.clipboard.writeText(text)
+  async fallbackCopy() {
+    try {
+      await navigator.clipboard.writeText(this.urlValue)
+      this.dispatch("copied", { prefix: "share" })
+    } catch (e) {
+      prompt("Copie o link:", this.urlValue)
     }
-
-    return new Promise((resolve, reject) => {
-      const textarea = document.createElement("textarea")
-      textarea.value = text
-      textarea.setAttribute("readonly", "")
-      textarea.style.position = "absolute"
-      textarea.style.left = "-9999px"
-      document.body.appendChild(textarea)
-      textarea.select()
-      try {
-        document.execCommand("copy") ? resolve() : reject(new Error("copy failed"))
-      } catch (err) {
-        reject(err)
-      } finally {
-        document.body.removeChild(textarea)
-      }
-    })
-  }
-
-  _showFeedback() {
-    if (!this.hasFeedbackTarget) return
-    this.feedbackTarget.classList.remove("hidden")
-    clearTimeout(this._feedbackTimer)
-    this._feedbackTimer = setTimeout(() => {
-      this.feedbackTarget.classList.add("hidden")
-    }, this.feedbackTimeoutValue)
   }
 }

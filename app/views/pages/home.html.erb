@@ -1,10 +1,12 @@
 <% content_for :title, t("app.name") %>
 
-<div class="text-center space-y-8 py-12">
-  <h1 class="text-4xl sm:text-5xl font-extrabold text-rose-600"><%= t("app.name") %></h1>
-  <p class="text-slate-600"><%= t("app.tagline") %></p>
-  <div class="space-y-3 max-w-sm mx-auto">
-    <%= link_to t("pages.home.create"), games_path, data: { turbo_method: :post }, class: "block w-full rounded-lg bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-lg font-semibold py-4 px-6 transition-colors shadow-sm" %>
-    <%= link_to t("pages.home.enter"), enter_path, class: "block w-full rounded-lg border border-rose-300 bg-white hover:bg-rose-50 text-rose-700 text-lg font-semibold py-4 px-6 transition-colors" %>
+<div class="py-12 flex flex-col items-center gap-7">
+  <div class="text-center max-w-md space-y-2">
+    <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">Crie uma sala de bingo</h1>
+    <p class="text-bingo-muted text-sm sm:text-base leading-relaxed">Crie uma partida e receba um código para compartilhar — ou entre em uma sala existente.</p>
+  </div>
+  <div class="w-full max-w-sm flex flex-col sm:flex-row gap-3">
+    <%= button_to t("pages.home.create"), games_path, method: :post, class: "flex-1 py-4 bg-bingo-red text-bingo-on-red rounded-2xl font-bold text-base hover:brightness-90" %>
+    <%= link_to t("pages.home.enter"), enter_path, class: "flex-1 py-4 border-[1.5px] border-bingo-line rounded-2xl font-medium text-center hover:border-bingo-fg" %>
   </div>
 </div>

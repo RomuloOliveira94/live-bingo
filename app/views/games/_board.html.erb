@@ -1,0 +1,13 @@
+<%# Renders the 75-number bingo board.
+  Locals:
+    game - Game instance
+%>
+<% drawn_set = game.draws.pluck(:number).to_set %>
+<div class="grid grid-cols-15 gap-1.5">
+  <% (1..75).each do |n| %>
+    <% drawn = drawn_set.include?(n) %>
+    <span class="aspect-square flex items-center justify-center text-xs sm:text-sm font-semibold rounded <%= drawn ? 'bg-bingo-fg text-bingo-on-red' : 'bg-bingo-surface text-bingo-fg' %>">
+      <%= n %>
+    </span>
+  <% end %>
+</div>
