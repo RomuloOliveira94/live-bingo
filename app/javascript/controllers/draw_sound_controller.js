@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { isMuted } from "sound_preference"
 
 // Plays the draw sound the instant a ball starts spinning — see
 // spin_controller.js's "bingo:spin-start" event (wired via the @window
@@ -26,6 +27,12 @@ export default class extends Controller {
   }
 
   play() {
+    // Muted: no .play() call at all — not "play then immediately pause",
+    // which would still cost a real (if inaudible) playback attempt and
+    // could itself interfere with the autoplay-unlock priming below (see
+    // armUnlock's own comment on that exact failure mode).
+    if (isMuted()) return
+
     this.audio.currentTime = 0
     this.audio.play().catch(() => {
       // Autoplay blocked (a guest who hasn't interacted with the page yet)

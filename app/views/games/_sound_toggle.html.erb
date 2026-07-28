@@ -1,0 +1,46 @@
+<%# Floating sound on/off toggle for the draw sound (public/sounds/draw-sound.mp3),
+  available to host and guest alike, on every game screen (waiting/active/
+  finished) — the only place it's meaningful, so it's rendered from
+  games/show.html.erb alone, never from pages/home or pages/enter.
+
+  Entirely client-side: the preference lives in localStorage (see
+  javascript/sound_preference.js), not on the server, so the server always
+  renders the same "unmuted" markup below — the Stimulus controller
+  corrects it to the real, persisted state on connect, which also runs
+  after every full-page morph refresh.
+
+  draw_sound_controller.js reads the same preference directly whenever a
+  ball is about to play, so this toggle never has to reach into that
+  controller directly; the two only ever communicate through localStorage.
+
+  Fixed bottom-right, clear of the ball/draw button/history chips above it
+  and the board below — see test/system/sound_toggle_test.rb for the
+  narrow-viewport regression coverage.
+
+  Built with tag.button and hash attributes rather than a hand-written
+  aria-label HTML attribute on purpose: the i18n hardcoded-string guard
+  (see i18n_hardcoded_strings_test) regex-scans raw attribute text for the
+  literal attribute name immediately followed by a quote, and a translated
+  value's own embedded quotes trip it into capturing a false-positive
+  "hardcoded" fragment. Every other translated attribute in this app
+  (placeholder, alt, turbo_confirm...) already goes through Ruby hash
+  syntax passed to a helper for the same reason — this follows that same,
+  guard-compatible convention instead of introducing a new one.
+%>
+<% mute_label = t("games.show.sound.mute_label") %>
+<% unmute_label = t("games.show.sound.unmute_label") %>
+<%= tag.button type: "button",
+      data: {
+        controller: "sound-toggle",
+        action: "click->sound-toggle#toggle",
+        sound_toggle_mute_label_value: mute_label,
+        sound_toggle_unmute_label_value: unmute_label
+      },
+      aria: { pressed: false, label: mute_label },
+      class: "group fixed bottom-5 right-5 z-40 inline-flex items-center justify-center w-12 h-12 rounded-full " \
+             "border-[1.5px] shadow-lg transition cursor-pointer border-bingo-line bg-bingo-surface text-bingo-fg " \
+             "hover:border-bingo-fg data-[state=muted]:border-bingo-accent data-[state=muted]:bg-bingo-accent " \
+             "data-[state=muted]:text-bingo-on-accent data-[state=muted]:hover:brightness-125" do %>
+  <span class="group-data-[state=muted]:hidden"><%= render "games/sound_on_icon" %></span>
+  <span class="hidden group-data-[state=muted]:inline"><%= render "games/sound_off_icon" %></span>
+<% end %>

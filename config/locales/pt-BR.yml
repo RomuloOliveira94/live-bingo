@@ -65,6 +65,9 @@ pt-BR:
         count_label: "%{drawn} / 75"
       finished:
         message: "Este bingo foi encerrado."
+      sound:
+        mute_label: "Silenciar som"
+        unmute_label: "Ativar som"
       share:
         copy_code: "Copiar código"
         copy_code_done: "Código copiado"
