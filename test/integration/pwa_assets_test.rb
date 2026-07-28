@@ -9,7 +9,7 @@ class PwaAssetsTest < ActionDispatch::IntegrationTest
     assert_equal "Bingo", json["name"]
     assert_equal "Bingo", json["short_name"]
     assert_equal "#141414", json["theme_color"]
-    assert_equal "#f8fafc", json["background_color"]
+    assert_equal "#ffffff", json["background_color"]
     assert_equal "standalone", json["display"]
     assert_equal "pt-BR", json["lang"]
     assert_equal 3, json["icons"].size
