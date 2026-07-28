@@ -32,8 +32,11 @@
           <%= render "games/last_ball", draw: @game.draws.order(position: :desc).first %>
         </div>
 
-        <% if is_host_of?(@game) && (@game.active? || @game.finished?) %>
-          <% draw_disabled = @game.finished? || @game.draws.count >= 75 %>
+        <%# Finished games get their own CTA below (see the "Finished (host)"
+          branch), so the draw button only ever renders for an active game —
+          no need to juggle a finished? case in its disabled/label logic here. %>
+        <% if is_host_of?(@game) && @game.active? %>
+          <% draw_disabled = @game.draws.count >= 75 %>
           <%= button_to t(draw_disabled ? "games.show.active.all_drawn" : "games.show.active.draw_button"),
               draw_game_path(code: @game.code), method: :post,
               disabled: draw_disabled,

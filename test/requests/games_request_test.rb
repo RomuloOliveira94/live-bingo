@@ -111,6 +111,26 @@ class GamesRequestTest < ActionDispatch::IntegrationTest
     assert_equal 0, game.viewer_count
   end
 
+  test "finished host revisiting the page does not see a draw button" do
+    # Regression: the draw button used to render whenever the game was
+    # active OR finished, picking its disabled label from
+    # `finished? || count >= 75` — so a host who finished early (say, after
+    # 3 draws) and came back to the page saw a disabled "Todas as bolas
+    # sorteadas" (all balls drawn) button, which is false. Finished games
+    # get their own CTA (see the "Finished (host)" branch), so the draw
+    # button should not render at all once the game is finished.
+    game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
+    game.update!(status: :finished, finished_at: Time.current)
+    game.draws.create!(number: 1, position: 1)
+    sign_in_as_host(game)
+
+    get game_path(code: game.code)
+
+    assert_response :success
+    assert_select "form[action=?]", draw_game_path(code: game.code), count: 0
+    assert_select "body", text: /#{I18n.t("games.show.active.all_drawn")}/, count: 0
+  end
+
   test "non-host cannot finish" do
     game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
     game.update!(status: :active)
