@@ -6,7 +6,7 @@ class RealtimeSystemTest < ApplicationSystemTestCase
     click_button "Criar bingo"
 
     assert_selector "#game-code", wait: 5
-    assert_text(/Aguardando/i)
+    assert_text "Chame a galera"
 
     click_button "Iniciar sorteio"
 

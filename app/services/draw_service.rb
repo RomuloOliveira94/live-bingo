@@ -34,10 +34,13 @@ class DrawService
     )
     Turbo::StreamsChannel.broadcast_replace_to(
       @game, target: "draw-history", partial: "games/draw_history",
-      locals: { draws: @game.draws.order(position: :desc) }
+      locals: { draws: @game.draws.order(position: :desc).limit(5) }
     )
     Turbo::StreamsChannel.broadcast_replace_to(
       @game, target: "drawn-count", partial: "games/drawn_count", locals: { game: @game }
+    )
+    Turbo::StreamsChannel.broadcast_replace_to(
+      @game, target: "board", partial: "games/board", locals: { game: @game }
     )
   end
 end

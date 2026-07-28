@@ -1,4 +1,6 @@
 class GamesController < ApplicationController
+  FINISHED_REDIRECT_DELAY_MS = 2500
+
   before_action :load_game, only: [ :show, :start, :finish, :draw, :restart ]
   before_action :require_host!, only: [ :start, :finish, :draw, :restart ]
 
@@ -14,22 +16,24 @@ class GamesController < ApplicationController
 
   def start
     @game.update!(status: :active, started_at: Time.current)
-    Turbo::StreamsChannel.broadcast_replace_to(
-      @game, target: "game-status", partial: "games/status_badge", locals: { game: @game }
-    )
+    # The waiting/active/finished branches in show.html.erb are mutually
+    # exclusive `if`s, never wrapped in a broadcastable target, so a targeted
+    # broadcast_replace_to can't flip a guest from one branch to another. A
+    # full morphed refresh re-renders the whole page for everyone connected.
+    @game.broadcast_refresh_to(@game)
     redirect_to game_path(code: @game.code)
   end
 
   def finish
     @game.update!(status: :finished, finished_at: Time.current)
-    Turbo::StreamsChannel.broadcast_replace_to(
-      @game, target: "game-status", partial: "games/status_badge", locals: { game: @game }
-    )
-    last_draw = @game.draws.order(position: :desc).first
-    Turbo::StreamsChannel.broadcast_replace_to(
-      @game, target: "last-ball", partial: "games/last_ball", locals: { draw: last_draw }
-    )
-    redirect_to game_path(code: @game.code)
+    # Deliberately no broadcast_refresh_to here: a full-page morph refresh
+    # races with the ephemeral redirect-slot append below (the refresh's
+    # fetch resolves against a fresh GET, which has no redirect element, and
+    # wipes it out mid-flight). The notice+redirect broadcast already fully
+    # resolves the "guest stuck on stale branch" problem by moving everyone
+    # off the page entirely, so it doesn't need the refresh's help too.
+    broadcast_finished_notice
+    redirect_to root_path, notice: t("games.show.finished.message")
   end
 
   def draw
@@ -43,6 +47,7 @@ class GamesController < ApplicationController
 
   def restart
     GameRestarter.call(game: @game)
+    @game.broadcast_refresh_to(@game)
     redirect_to game_path(code: @game.code)
   rescue GameRestarter::GameNotActive
     redirect_to game_path(code: @game.code), alert: t("games.errors.game_not_active")
@@ -57,5 +62,20 @@ class GamesController < ApplicationController
   def require_host!
     return if Current.host_of?(@game)
     raise ActionController::RoutingError, "Not host"
+  end
+
+  # Kicks everyone connected to the game stream out to the home page: shows
+  # the "bingo encerrado" notice in the layout's flash region, then appends a
+  # redirect element (see redirect_controller.js) that Turbo.visit()s
+  # everyone away after a short delay so they have time to read it.
+  def broadcast_finished_notice
+    Turbo::StreamsChannel.broadcast_replace_to(
+      @game, target: "flash", partial: "layouts/flash",
+             locals: { notice: t("games.show.finished.message"), alert: nil }
+    )
+    Turbo::StreamsChannel.broadcast_append_to(
+      @game, target: "redirect-slot", partial: "games/redirect",
+             locals: { url: root_path, delay: FINISHED_REDIRECT_DELAY_MS }
+    )
   end
 end

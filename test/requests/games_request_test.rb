@@ -99,7 +99,8 @@ class GamesRequestTest < ActionDispatch::IntegrationTest
     sign_in_as_host(game)
 
     post finish_game_path(code: game.code)
-    assert_response :redirect
+    assert_redirected_to root_path
+    assert_equal I18n.t("games.show.finished.message"), flash[:notice]
 
     game.reload
     assert_equal "finished", game.status

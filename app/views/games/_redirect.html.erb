@@ -1,0 +1,8 @@
+<%# Ephemeral element broadcast into #redirect-slot when a game finishes.
+  Gives everyone a moment to read the flash notice, then navigates them
+  away with Turbo.visit — see redirect_controller.js.
+  Locals:
+    url   - String, where to send the visitor
+    delay - Integer, milliseconds to wait before visiting
+%>
+<div data-controller="redirect" data-redirect-url-value="<%= url %>" data-redirect-delay-value="<%= delay %>" hidden></div>
