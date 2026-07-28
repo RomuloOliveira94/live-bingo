@@ -3,10 +3,21 @@ require "test_helper"
 # Verifies pt-BR (primary) and en (secondary) never drift apart: every key
 # translated in one locale must exist in the other.
 class I18nLocaleParityTest < ActiveSupport::TestCase
-  # Rails ships English defaults for ActiveRecord validation messages, so
-  # config/locales/en.yml intentionally doesn't redeclare the pt-BR-only
-  # `activerecord.*` overrides. Everything else must have full parity.
-  EXCLUDED_NAMESPACES = %w[activerecord].freeze
+  # `activerecord.attributes.*` (human-readable attribute names like "Número")
+  # is pt-BR-only by design: Rails auto-humanizes attribute names in English
+  # (:host_session_id => "Host session"), so there's nothing to mirror in
+  # en.yml. `activerecord.errors.*` is NOT excluded (unlike an earlier version
+  # of this comment claimed) — those messages are checked for parity like
+  # everything else, and en.yml declares plain-English equivalents for them.
+  #
+  # Known limitation: parity only catches a key declared in one locale file
+  # but missing from the other. It can't catch a key missing from BOTH files,
+  # which is exactly the shape of bug that let Draw's `numericality: { in: }`
+  # validator silently render its English gem default in pt-BR for a while —
+  # neither locale file had `errors.messages.in` at all, so there was no
+  # asymmetry to flag. That class of gap is guarded by model tests asserting
+  # exact translated message content instead (see test/models/draw_test.rb).
+  EXCLUDED_NAMESPACES = %w[activerecord.attributes].freeze
 
   test "pt-BR and en declare the same set of keys" do
     pt_br_keys = locale_keys("pt-BR")

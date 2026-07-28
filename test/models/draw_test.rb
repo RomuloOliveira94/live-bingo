@@ -27,11 +27,11 @@ class DrawTest < ActiveSupport::TestCase
   test "should require number in range 1..75" do
     draw_low = Draw.new(game: games(:one), number: 0, position: 1)
     assert_not draw_low.valid?
-    assert draw_low.errors[:number].any?
+    assert_includes draw_low.errors[:number], "deve estar entre 1..75"
 
     draw_high = Draw.new(game: games(:one), number: 76, position: 1)
     assert_not draw_high.valid?
-    assert draw_high.errors[:number].any?
+    assert_includes draw_high.errors[:number], "deve estar entre 1..75"
   end
 
   test "should require position" do

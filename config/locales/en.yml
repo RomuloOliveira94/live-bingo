@@ -78,3 +78,45 @@ en:
       prompt: "Copy:"
     share:
       prompt: "Copy the link:"
+
+  date:
+    formats:
+      default: "%d/%m/%Y"
+  time:
+    formats:
+      default: "%d/%m/%Y at %H:%M"
+
+  # English restatements of the pt-BR overrides in pt-BR.yml, kept here only
+  # for parity-test coverage (see test/i18n_locale_parity_test.rb) — these
+  # already match Rails' own bundled English validation defaults, so nothing
+  # actually changes for the :en locale. activerecord.attributes.* is NOT
+  # mirrored here; see EXCLUDED_NAMESPACES for why.
+  activerecord:
+    errors:
+      messages:
+        blank: "can't be blank"
+        taken: "has already been taken"
+        invalid: "is invalid"
+        too_short: "is too short (minimum is %{count} characters)"
+        too_long: "is too long (maximum is %{count} characters)"
+        wrong_length: "is the wrong length (should be %{count} characters)"
+        not_a_number: "is not a number"
+        not_an_integer: "must be an integer"
+        greater_than: "must be greater than %{count}"
+        greater_than_or_equal_to: "must be greater than or equal to %{count}"
+        less_than: "must be less than %{count}"
+        less_than_or_equal_to: "must be less than or equal to %{count}"
+        equal_to: "must be equal to %{count}"
+        in: "must be in %{count}"
+        between: "must be between %{count} and %{max}"
+        present: "must be blank"
+        accepted: "must be accepted"
+        empty: "can't be empty"
+        exclusion: "is reserved"
+        inclusion: "is not included in the list"
+        confirmation: "doesn't match %{attribute}"
+        required: "must exist"
+        record_invalid: "Validation failed: %{errors}"
+        restrict_dependent_destroy:
+          has_one: "Cannot delete record because a dependent %{record} exists"
+          has_many: "Cannot delete record because dependent %{record} exist"

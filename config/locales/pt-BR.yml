@@ -79,6 +79,13 @@ pt-BR:
     share:
       prompt: "Copie o link:"
 
+  date:
+    formats:
+      default: "%d/%m/%Y"
+  time:
+    formats:
+      default: "%d/%m/%Y às %H:%M"
+
   activerecord:
     attributes:
       game:
@@ -103,6 +110,7 @@ pt-BR:
         less_than: "deve ser menor que %{count}"
         less_than_or_equal_to: "deve ser menor ou igual a %{count}"
         equal_to: "deve ser igual a %{count}"
+        in: "deve estar entre %{count}"
         between: "deve estar entre %{count} e %{max}"
         present: "deve estar em branco"
         accepted: "deve ser aceito"
