@@ -18,11 +18,23 @@ export default class extends Controller {
     unmuteLabel: String
   }
 
-  // Runs on every connect — including after a full-page morph refresh (see
-  // turbo_refresh_method_tag :morph) — so the button always reflects
-  // whatever localStorage currently holds rather than whatever it happened
-  // to render as server-side (the server has no idea of this preference at
-  // all; it's 100% client-side).
+  // Runs on every real connect — first render of a game page, or a fresh
+  // navigation to one — so the button reflects whatever localStorage
+  // currently holds rather than whatever it happened to render as
+  // server-side (the server has no idea of this preference at all; it's
+  // 100% client-side).
+  //
+  // Deliberately does NOT need to run again after a same-page morph refresh
+  // (see turbo_refresh_method_tag :morph, and broadcast_refresh_to in
+  // GamesController): the button carries data-turbo-permanent (see
+  // games/_sound_toggle.html.erb), so Turbo skips it entirely on morph and
+  // this element/controller instance — and whatever render() last set on
+  // it — survives untouched. That's not just an optimization; a morph that
+  // WASN'T skipped would patch aria-pressed/data-state back to the
+  // server's hardcoded "unmuted" default in place, and Stimulus only
+  // reconnects elements that are actually added/removed from the DOM, so a
+  // plain in-place attribute patch would never trigger this connect() again
+  // to fix it back up.
   connect() {
     this.render(isMuted())
   }

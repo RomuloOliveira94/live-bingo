@@ -6,8 +6,24 @@
   Entirely client-side: the preference lives in localStorage (see
   javascript/sound_preference.js), not on the server, so the server always
   renders the same "unmuted" markup below — the Stimulus controller
-  corrects it to the real, persisted state on connect, which also runs
-  after every full-page morph refresh.
+  corrects it to the real, persisted state on connect.
+
+  data-turbo-permanent (paired with the stable #sound-toggle id) is load-
+  bearing, not decorative: a broadcast_refresh_to morph (start/restart, see
+  GamesController) re-renders the whole page in place, and Turbo's morph
+  preserves an *existing* node rather than replacing it whenever it can —
+  which means it patches this element's attributes to match the freshly
+  rendered (always-"unmuted") markup above, in place, WITHOUT removing or
+  re-adding the node. Stimulus only connects/disconnects controllers when
+  an element is actually added to or removed from the DOM, so that in-place
+  attribute patch never triggers a reconnect to fix it back up — a muted
+  user's button would otherwise revert to showing "unmuted" after every
+  single morph, permanently, until they happened to reload the page or
+  toggle it again. data-turbo-permanent sidesteps the whole problem by
+  telling Turbo to skip this element during morphing entirely, so the node,
+  its attributes, and its live controller instance all survive untouched —
+  the fix Turbo actually documents for exactly this "don't let a refresh
+  clobber client-only UI state" case.
 
   draw_sound_controller.js reads the same preference directly whenever a
   ball is about to play, so this toggle never has to reach into that
@@ -30,8 +46,10 @@
 <% mute_label = t("games.show.sound.mute_label") %>
 <% unmute_label = t("games.show.sound.unmute_label") %>
 <%= tag.button type: "button",
+      id: "sound-toggle",
       data: {
         controller: "sound-toggle",
+        turbo_permanent: true,
         action: "click->sound-toggle#toggle",
         sound_toggle_mute_label_value: mute_label,
         sound_toggle_unmute_label_value: unmute_label

@@ -55,13 +55,30 @@ class SoundToggleSystemTest < ApplicationSystemTestCase
     find("[data-controller='sound-toggle']").click
     assert_selector "[data-controller='sound-toggle'][aria-pressed='true']"
 
+    # Restart keeps the game "active" throughout (see GameRestarter), so the
+    # button, and even the "Sortear bola" text below, never actually leave
+    # the DOM here — waiting on either alone can resolve from stale,
+    # pre-morph content and never actually observe the morph at all. That
+    # false sense of coverage is exactly what let a real bug hide behind a
+    # green test here before: without data-turbo-permanent (see
+    # games/_sound_toggle.html.erb), the morph patches this button's
+    # attributes back to the server's hardcoded "unmuted" default in place
+    # — and since the node itself is never removed/re-added, Stimulus never
+    # reconnects to fix it back up, so the corruption is permanent, not a
+    # brief flash. Waiting for Turbo's own "the morph is done" signal before
+    # asserting closes that hole: it forces the assertion below to inspect
+    # genuinely post-morph state instead of racing it.
+    page.execute_script(<<~JS)
+      document.addEventListener("turbo:render", function() {
+        document.body.dataset.morphed = "1"
+      }, { once: true })
+    JS
+
     accept_confirm do
       click_button "Reiniciar partida"
     end
-    # broadcast_refresh_to's morph re-renders the whole page in place —
-    # confirm the button itself survives the morph before asserting on its
-    # state.
     assert_selector "button", text: "Sortear bola", wait: 5
+    assert_selector "body[data-morphed='1']", wait: 5
 
     assert_selector "[data-controller='sound-toggle'][aria-pressed='true']", wait: 5
   end
