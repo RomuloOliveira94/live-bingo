@@ -24,13 +24,23 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
 
+  # CapRover's nginx terminates TLS and reverse-proxies plain HTTP to this
+  # container, so without this Rails computes request.base_url as
+  # "http://...", which never matches the browser's "https://" Origin header
+  # — CSRF's same-origin check then rejects every non-GET request (see
+  # ActionController::RequestForgeryProtection#valid_request_origin?).
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  # config.assume_ssl = true
+  config.assume_ssl = true
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
+  config.force_ssl = true
 
   # Skip http-to-https redirect for the default health check endpoint.
+  # Not needed here: with assume_ssl on, request.ssl? is unconditionally
+  # true, so ActionDispatch::SSL's redirect branch never triggers for /up
+  # (or anything else) in the first place — confirmed by booting this app
+  # in RAILS_ENV=production locally and hitting /up both with and without
+  # the proxy's X-Forwarded-Proto header: 200 either way, no 301.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
   # Log to STDOUT with the current request id as a default log tag.
@@ -79,12 +89,14 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
 
-  # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  #
+  # Enable DNS rebinding protection and other `Host` header attacks. Reads
+  # the deployed domain from an ENV var rather than hardcoding it here —
+  # this repo is public, so the domain the app is actually deployed under
+  # shouldn't live in source control. A no-op (config.hosts stays the empty
+  # array it defaults to, so ActionDispatch::HostAuthorization isn't even
+  # inserted) until ops sets APP_HOST.
+  config.hosts << ENV["APP_HOST"] if ENV["APP_HOST"].present?
+
   # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
