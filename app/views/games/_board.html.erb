@@ -6,7 +6,7 @@
 <div class="grid grid-cols-10 sm:grid-cols-15 gap-[5px]">
   <% (1..75).each do |n| %>
     <% drawn = drawn_set.include?(n) %>
-    <span class="bingo-cell aspect-square flex items-center justify-center rounded-[7px] border font-display text-xs sm:text-[13px] <%= drawn ? "bg-bingo-red text-bingo-on-red border-bingo-red" : "bg-bingo-surface text-bingo-muted border-bingo-line" %>">
+    <span class="bingo-cell aspect-square flex items-center justify-center rounded-[7px] border font-display text-xs sm:text-[13px] <%= drawn ? "bg-bingo-accent text-bingo-on-accent border-bingo-accent" : "bg-bingo-surface text-bingo-muted border-bingo-line" %>">
       <%= n %>
     </span>
   <% end %>

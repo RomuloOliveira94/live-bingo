@@ -7,9 +7,9 @@
   --color-bingo-fg: #141414;
   --color-bingo-muted: #828280;
   --color-bingo-cage: #fbfbfa;
-  --color-bingo-red: #141414;
-  --color-bingo-on-red: #ffffff;
-  --color-bingo-red-soft: #f2f2f0;
+  --color-bingo-accent: #141414;
+  --color-bingo-on-accent: #ffffff;
+  --color-bingo-accent-soft: #f2f2f0;
 
   /* Jost is the real display font (Futura is referenced by the design but never loaded). */
   --font-display: "Jost", "Futura", sans-serif;
