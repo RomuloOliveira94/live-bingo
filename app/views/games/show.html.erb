@@ -24,7 +24,7 @@
       <div class="flex-[1_1_300px] min-w-[280px] flex flex-col items-center gap-5"
            data-controller="spin" data-action="turbo:submit-start->spin#start turbo:submit-end->spin#stop">
         <div class="flex items-center gap-2 font-display text-xs uppercase tracking-[0.1em] text-bingo-muted">
-          <span class="w-[7px] h-[7px] rounded-full bg-bingo-red inline-block" aria-hidden="true"></span>
+          <span class="w-[7px] h-[7px] rounded-full bg-bingo-accent inline-block" aria-hidden="true"></span>
           <%= t("games.show.active.status_line", code: format_game_code(@game.code)) %>
         </div>
 
