@@ -1,31 +1,74 @@
-# Files in the config/locales directory are used for internationalization and
-# are automatically loaded by Rails. If you want to use locales other than
-# English, add the necessary files in this directory.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# To learn more about the API, please read the Rails Internationalization guide
-# at https://guides.rubyonrails.org/i18n.html.
-#
-# Be aware that YAML interprets the following case-insensitive strings as
-# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
-# must be quoted to be interpreted as strings. For example:
-#
-#     en:
-#       "yes": yup
-#       enabled: "ON"
-
 en:
   hello: "Hello world"
+  app:
+    name: "Bingo"
+    tagline: "Live bingo draw"
+
+  pages:
+    home:
+      create: "Create bingo"
+      enter: "Enter with code"
+    enter:
+      title: "Join bingo"
+      code_label: "Bingo code"
+      submit: "Enter"
+    join:
+      not_found: "Code not found. Please check and try again."
+
+  games:
+    show:
+      title: "Bingo"
+      finish_button: "Finish"
+      confirm_finish: "Are you sure you want to finish? This cannot be undone."
+      confirm_restart: "Restart will clear all drawn numbers. Continue?"
+      waiting:
+        visitor_message: "Waiting for the host to start the game..."
+        start_button: "Start bingo"
+      active:
+        draw_button: "Draw number"
+        restart_button: "Restart"
+        no_draws_yet: "No numbers drawn yet."
+      finished:
+        message: "This bingo has ended."
+      share:
+        url_label: "Join link"
+      viewer_count:
+        zero: "No one watching"
+        one: "1 person watching"
+        other: "%{count} people watching"
+      drawn_count:
+        zero: "No numbers drawn"
+        one: "1 number drawn"
+        other: "%{count} numbers drawn"
+
+  games.errors:
+    game_not_active: "Bingo must be active."
+
+  draws:
+    errors:
+      game_not_active: "Bingo must be active to draw."
+      no_numbers_remaining: "All 75 numbers have been drawn."
+
+  statuses:
+    game:
+      waiting: "Waiting"
+      active: "In progress"
+      finished: "Finished"
+
+  errors:
+    not_host: "Only the bingo host can do that."
+    game_not_found: "Bingo not found."
+
+  helpers:
+    clipboard:
+      copied: "Copied!"
+    share:
+      button: "Share"
+      title: "Let's play bingo!"
+      text: "Join my bingo with code %{code}"
+      fallback: "Copy the code: %{code}"
+
+  shared:
+    code_label: "Code"
+    copy: "Copy"
+    copied: "Copied!"

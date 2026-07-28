@@ -1,57 +1,61 @@
 class GamesController < ApplicationController
-  before_action :load_game, only: [ :show, :start, :finish ]
-
-  def new
-  end
+  before_action :load_game, only: [ :show, :start, :finish, :draw, :restart ]
+  before_action :require_host!, only: [ :start, :finish, :draw, :restart ]
 
   def create
-    @game = GameCreator.call(name: params[:name], pattern: params[:pattern] || :line)
-    set_session_cookie(SessionData.host_for(@game))
-    redirect_to game_path(@game.code)
+    session_data = SessionData.write_new(cookies)
+    game = GameCreator.call(host_id: session_data.host_id)
+    redirect_to game_path(code: game.code)
   end
 
   def show
-    if @game.nil?
-      render plain: t("errors.game_not_found"), status: :not_found
-      return
-    end
-
-    if Current.guest? && Current.game_id == @game.id
-      @card = Card.find_by(game: @game, session_id: Current.guest_session_id)
-      if @card.nil?
-        render plain: t("errors.card_not_found"), status: :not_found
-        return
-      end
-    end
-
-    if @game.finished?
-      @wins = @game.wins.confirmed.includes(:card)
-    end
+    raise ActionController::RoutingError, "Game not found" if @game.nil?
   end
 
   def start
-    unless Current.host_of?(@game)
-      render plain: t("errors.not_host"), status: :not_found
-      return
-    end
-
     @game.update!(status: :active, started_at: Time.current)
-    redirect_to game_path(@game.code)
+    Turbo::StreamsChannel.broadcast_replace_to(
+      @game, target: "game-status", partial: "games/status_badge", locals: { game: @game }
+    )
+    redirect_to game_path(code: @game.code)
   end
 
   def finish
-    unless Current.host_of?(@game)
-      render plain: t("errors.not_host"), status: :not_found
-      return
-    end
-
     @game.update!(status: :finished, finished_at: Time.current)
-    redirect_to game_path(@game.code)
+    Turbo::StreamsChannel.broadcast_replace_to(
+      @game, target: "game-status", partial: "games/status_badge", locals: { game: @game }
+    )
+    last_draw = @game.draws.order(position: :desc).first
+    Turbo::StreamsChannel.broadcast_replace_to(
+      @game, target: "last-ball", partial: "games/last_ball", locals: { draw: last_draw }
+    )
+    redirect_to game_path(code: @game.code)
+  end
+
+  def draw
+    DrawService.call(game: @game)
+    redirect_to game_path(code: @game.code)
+  rescue DrawService::GameNotActive
+    redirect_to game_path(code: @game.code), alert: t("draws.errors.game_not_active")
+  rescue DrawService::NoNumbersRemaining
+    redirect_to game_path(code: @game.code), alert: t("draws.errors.no_numbers_remaining")
+  end
+
+  def restart
+    GameRestarter.call(game: @game)
+    redirect_to game_path(code: @game.code)
+  rescue GameRestarter::GameNotActive
+    redirect_to game_path(code: @game.code), alert: t("games.errors.game_not_active")
   end
 
   private
 
   def load_game
     @game = Game.find_by(code: params[:code])
+  end
+
+  def require_host!
+    return if Current.host_of?(@game)
+    raise ActionController::RoutingError, "Not host"
   end
 end

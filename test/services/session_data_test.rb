@@ -2,56 +2,53 @@ require "test_helper"
 
 class SessionDataTest < ActiveSupport::TestCase
   test "round-trip through cookies" do
-    data = SessionData.new(role: "host", game_id: 42, host_session_id: "abc123")
-
-    # Mock cookies object
+    data = SessionData.new(host_id: "abc123")
     cookie_jar = {}
-
     data.write_to(cookie_jar)
 
-    # Verify cookie was set
     assert cookie_jar.key?(:bingo_session)
-    cookie_data = cookie_jar[:bingo_session]
-
-    # In test mode, it's just the JSON value
-    parsed = JSON.parse(cookie_data)
-    assert_equal "host", parsed["role"]
-    assert_equal 42, parsed["game_id"]
-    assert_equal "abc123", parsed["host_session_id"]
+    parsed = JSON.parse(cookie_jar[:bingo_session])
+    assert_equal "abc123", parsed["host_id"]
   end
 
-  test "host_for factory" do
+  test "host_id_for_new_game generates 32-char hex" do
+    host_id = SessionData.host_id_for_new_game
+    assert_equal 32, host_id.length
+    assert_match(/\A[a-f0-9]{32}\z/, host_id)
+  end
+
+  test "write_new creates and writes cookie" do
+    cookie_jar = {}
+    data = SessionData.write_new(cookie_jar)
+
+    assert data.host_id.present?
+    assert cookie_jar.key?(:bingo_session)
+  end
+
+  test "host_of? returns true for matching host" do
     game = games(:one)
-    data = SessionData.host_for(game)
-
-    assert_equal "host", data.role
-    assert_equal game.id, data.game_id
-    assert_equal game.host_session_id, data.host_session_id
-    assert_nil data.guest_session_id
+    data = SessionData.new(host_id: game.host_session_id)
+    assert data.host_of?(game)
   end
 
-  test "guest_for factory" do
+  test "host_of? returns false for non-matching host" do
     game = games(:one)
-    data = SessionData.guest_for(game, session_id: "guest_abc")
-
-    assert_equal "guest", data.role
-    assert_equal game.id, data.game_id
-    assert_nil data.host_session_id
-    assert_equal "guest_abc", data.guest_session_id
+    data = SessionData.new(host_id: "other_host_id")
+    refute data.host_of?(game)
   end
 
-  test "to_h returns hash with compact" do
-    data = SessionData.new(role: "host", game_id: 1, host_session_id: "abc")
-    hash = data.to_h
-
-    assert_equal({ role: "host", game_id: 1, host_session_id: "abc" }, hash)
+  test "host_of? returns false for blank host_id" do
+    game = games(:one)
+    data = SessionData.new(host_id: nil)
+    refute data.host_of?(game)
   end
 
-  test "to_h excludes nil values" do
-    data = SessionData.new(role: "guest", game_id: 1, guest_session_id: "xyz")
-    hash = data.to_h
+  test "cookies_to_session returns nil for blank cookie" do
+    assert_nil SessionData.cookies_to_session({})
+  end
 
-    assert_equal({ role: "guest", game_id: 1, guest_session_id: "xyz" }, hash)
-    refute hash.key?(:host_session_id)
+  test "cookies_to_session handles invalid JSON" do
+    cookies = { bingo_session: "not-json" }
+    assert_nil SessionData.cookies_to_session(cookies)
   end
 end

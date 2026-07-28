@@ -1,13 +1,10 @@
 module SessionHelpers
   def sign_in_as_host(game)
-    data = SessionData.host_for(game)
-    cookies[:bingo_session] = data.to_h.to_json
+    cookies[:bingo_session] = { host_id: game.host_session_id }.to_json
   end
 
-  def sign_in_as_guest(game, session_id: "guest_#{SecureRandom.hex(4)}")
-    data = SessionData.guest_for(game, session_id: session_id)
-    cookies[:bingo_session] = data.to_h.to_json
-    data
+  def sign_in_as_viewer(host_id: nil)
+    cookies[:bingo_session] = { host_id: host_id || SecureRandom.hex(16) }.to_json
   end
 
   def sign_out

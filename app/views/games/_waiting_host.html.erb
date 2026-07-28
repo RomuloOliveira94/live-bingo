@@ -1,0 +1,15 @@
+<div class="text-center space-y-6">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+    <p class="text-xs uppercase text-slate-500 mb-2"><%= t("shared.code_label") %></p>
+    <p id="game-code" class="text-5xl sm:text-6xl font-mono font-extrabold tracking-widest text-rose-600 select-all" data-clipboard-text="<%= game.code %>">
+      <%= format_game_code(game.code) %>
+    </p>
+  </div>
+
+  <%= render "games/share", game: game %>
+
+  <div>
+    <%= button_to t("games.show.waiting.start_button"), start_game_path(code: game.code), method: :post,
+          class: "w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-lg font-semibold py-4 px-6 transition-colors shadow-sm" %>
+  </div>
+</div>

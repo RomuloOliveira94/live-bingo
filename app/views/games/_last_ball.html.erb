@@ -1,0 +1,13 @@
+<%# Renders the last drawn ball.
+  Locals:
+    draw - Draw instance or nil
+%>
+<% if draw %>
+  <div class="inline-flex w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-rose-500 to-rose-700 items-center justify-center text-white text-5xl sm:text-7xl font-extrabold shadow-2xl animate-fade-in">
+    <%= draw.number %>
+  </div>
+<% else %>
+  <div class="inline-flex w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-slate-200 items-center justify-center text-slate-400 text-3xl">
+    —
+  </div>
+<% end %>

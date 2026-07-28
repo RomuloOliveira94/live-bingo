@@ -1,14 +1,16 @@
 class SessionData
   COOKIE_NAME = :bingo_session
-  EXPIRATION = 24.hours
+  EXPIRATION = 30.days
+  HOST_ID_BYTES = 16
 
-  attr_reader :role, :game_id, :host_session_id, :guest_session_id
+  attr_reader :host_id
 
-  def initialize(role:, game_id:, host_session_id: nil, guest_session_id: nil)
-    @role = role
-    @game_id = game_id
-    @host_session_id = host_session_id
-    @guest_session_id = guest_session_id
+  def initialize(host_id:)
+    @host_id = host_id
+  end
+
+  def self.host_id_for_new_game
+    SecureRandom.hex(HOST_ID_BYTES)
   end
 
   def self.cookies_to_session(cookies)
@@ -22,53 +24,32 @@ class SessionData
     return nil if raw.blank?
 
     data = JSON.parse(raw)
-    new(
-      role: data["role"],
-      game_id: data["game_id"],
-      host_session_id: data["host_session_id"],
-      guest_session_id: data["guest_session_id"]
-    )
+    new(host_id: data["host_id"])
   rescue JSON::ParserError
     nil
   end
 
-  def self.host_for(game)
-    new(
-      role: "host",
-      game_id: game.id,
-      host_session_id: game.host_session_id
-    )
-  end
-
-  def self.guest_for(game, session_id:)
-    new(
-      role: "guest",
-      game_id: game.id,
-      guest_session_id: session_id
-    )
+  def self.write_new(cookies)
+    new(host_id: host_id_for_new_game).tap { |s| s.write_to(cookies) }
   end
 
   def write_to(cookies)
+    payload = { host_id: host_id }.to_json
     if Rails.env.test?
-      cookies[COOKIE_NAME] = to_h.to_json
+      cookies[COOKIE_NAME] = payload
     elsif cookies.respond_to?(:signed)
       cookies.signed[COOKIE_NAME] = {
-        value: to_h.to_json,
+        value: payload,
         expires: EXPIRATION,
         httponly: true,
         same_site: :lax
       }
     else
-      cookies[COOKIE_NAME] = to_h.to_json
+      cookies[COOKIE_NAME] = payload
     end
   end
 
-  def to_h
-    {
-      role: role,
-      game_id: game_id,
-      host_session_id: host_session_id,
-      guest_session_id: guest_session_id
-    }.compact
+  def host_of?(game)
+    host_id.present? && game.host_session_id == host_id
   end
 end

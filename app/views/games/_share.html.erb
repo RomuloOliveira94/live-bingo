@@ -1,0 +1,25 @@
+<% share_url = game_url_for_sharing(game) %>
+<div data-controller="share"
+     data-share-title-value="<%= t('helpers.share.title') %>"
+     data-share-text-value="<%= t('helpers.share.text', code: game.code) %>"
+     data-share-url-value="<%= share_url %>"
+     data-share-fallback-value="<%= t('helpers.share.fallback', code: game.code) %>"
+     class="space-y-2">
+  <button type="button"
+          data-action="share#share"
+          class="w-full rounded-lg bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white text-lg font-semibold py-4 px-6 transition-colors shadow-sm">
+    <%= t("helpers.share.button") %>
+  </button>
+  <p data-share-target="feedback" class="hidden text-center text-sm font-medium text-emerald-600">
+    <%= t("helpers.clipboard.copied") %>
+  </p>
+  <p class="text-xs text-slate-500 text-center break-all">
+    <%= t("games.show.share.url_label") %>: <span class="font-mono"><%= share_url %></span>
+  </p>
+  <div data-controller="clipboard" data-clipboard-text-value="<%= share_url %>" class="text-center">
+    <button type="button" data-action="clipboard#copy" class="rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm font-medium px-3 py-1.5 transition-colors">
+      <%= t("shared.copy") %>
+    </button>
+    <span data-clipboard-target="feedback" class="hidden text-xs text-emerald-600 ml-2"><%= t("helpers.clipboard.copied") %></span>
+  </div>
+</div>
