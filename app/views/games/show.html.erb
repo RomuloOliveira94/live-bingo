@@ -1,8 +1,17 @@
 <% content_for :title, t("games.show.title") %>
-<% content_for :description, t("seo.game_description") %>
+<%# The room code is already public (it's in the URL itself) — surfacing it
+    in the crawler-facing description too just makes the preview card make
+    sense for what's actually being shared: an invite into a specific room.
+    Formatted the same way every other user-facing surface shows it (see
+    games.show.active.status_line). %>
+<% content_for :description, t("seo.game_description", code: format_game_code(@game.code)) %>
 <%# Game codes are ephemeral, private-by-URL rooms — never let a search
-    engine index one (see SeoController#sitemap and public robots.txt for
-    the other two layers of the same guard). %>
+    engine index one. This noindex tag is what actually enforces that;
+    SeoController#sitemap simply never lists a game page either, on top of
+    it. robots.txt deliberately does NOT block crawling this page (see its
+    comment in config/routes.rb) — link-preview crawlers like
+    facebookexternalhit/WhatsApp need to fetch it to unfurl the host's
+    shared room link, which is this app's primary sharing flow. %>
 <% content_for :robots, "noindex, nofollow" %>
 
 <%= turbo_stream_from @game %>

@@ -7,7 +7,7 @@ pt-BR:
   seo:
     description: "Acompanhe o bingo ao vivo e em tempo real — grátis, direto do navegador, sem app e sem cadastro."
     enter_description: "Digite o código que o organizador compartilhou com você e acompanhe o bingo ao vivo em tempo real."
-    game_description: "Acompanhe este bingo ao vivo, em tempo real, com todo mundo da sala."
+    game_description: "Você foi convidado para a sala %{code} — entre agora e acompanhe este bingo ao vivo, em tempo real, com todo mundo da sala."
 
   nav:
     cta:

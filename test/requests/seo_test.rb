@@ -70,13 +70,13 @@ class SeoTest < ActionDispatch::IntegrationTest
     assert_select "meta[property='og:url'][content=?]", "http://www.example.com/entrar"
   end
 
-  test "a game show page is noindex, has its own description, and a code-specific canonical" do
+  test "a game show page is noindex, has its own room-specific description, and a code-specific canonical" do
     game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
 
     get game_path(code: game.code)
     assert_response :success
 
-    expected_description = I18n.t("seo.game_description", locale: :"pt-BR")
+    expected_description = I18n.t("seo.game_description", locale: :"pt-BR", code: ApplicationController.helpers.format_game_code(game.code))
 
     assert_select "title", text: "#{I18n.t('games.show.title', locale: :"pt-BR")} · #{I18n.t('app.name')}"
     assert_select "meta[name=description][content=?]", expected_description
@@ -94,13 +94,60 @@ class SeoTest < ActionDispatch::IntegrationTest
     )
   end
 
-  test "robots.txt disallows game pages and points at the sitemap" do
+  # Regression test for the bugfix: a `Disallow: /games/` here used to block
+  # facebookexternalhit (and every other crawler that respects robots.txt)
+  # from ever fetching a shared game link, so WhatsApp/Facebook showed no
+  # preview at all when the host shared their room — this app's primary
+  # sharing flow. `noindex` (see games/show.html.erb) plus the sitemap
+  # omission below are the correct, sufficient way to keep a game page out
+  # of the index without also blocking crawling.
+  test "robots.txt allows crawling game pages and points at the sitemap" do
     get "/robots.txt"
     assert_response :success
     assert_equal "text/plain; charset=utf-8", response.content_type
 
-    assert_match(/^Disallow: \/games\/$/, response.body)
+    assert_no_match(/^Disallow:/, response.body)
     assert_match(%r{^Sitemap: http://www\.example\.com/sitemap\.xml$}, response.body)
+  end
+
+  # Empirical regression coverage for the bugfix's other two failure modes
+  # that would have produced the exact same "no preview" symptom even with
+  # robots.txt fixed: allow_browser blocking the crawler outright (406), or
+  # the game page falling back to an incomplete/relative OG head. Confirms
+  # a real crawler User-Agent gets a normal 200 with a complete, absolute-
+  # URL Open Graph + Twitter Card set — not just that robots.txt allows it.
+  test "a crawler user agent gets a full 200 response with a complete, absolute-URL OG head for a game page" do
+    game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
+
+    [
+      "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
+      "WhatsApp/2.23.20.0",
+      "Twitterbot/1.0"
+    ].each do |crawler_ua|
+      get game_path(code: game.code), headers: { "User-Agent" => crawler_ua }
+      assert_response :success, "expected 200 for User-Agent #{crawler_ua.inspect}"
+
+      expected_description = I18n.t("seo.game_description", locale: :"pt-BR", code: ApplicationController.helpers.format_game_code(game.code))
+      expected_url = "http://www.example.com/games/#{game.code}"
+
+      assert_select "meta[name=robots][content=?]", "noindex, nofollow"
+      assert_select "meta[property='og:type'][content=?]", "website"
+      assert_select "meta[property='og:site_name'][content=?]", I18n.t("app.name")
+      assert_select "meta[property='og:title']"
+      assert_select "meta[property='og:description'][content=?]", expected_description
+      assert_select "meta[property='og:url'][content=?]", expected_url
+      assert_select "meta[property='og:locale']"
+      assert_select "meta[name='twitter:card'][content=?]", "summary_large_image"
+      assert_select "meta[name='twitter:description'][content=?]", expected_description
+
+      og_image = assert_select("meta[property='og:image']").first["content"]
+      assert_match(%r{\Ahttps?://}, og_image, "og:image must be an absolute URL, got #{og_image.inspect}")
+      assert_select "meta[property='og:image:width'][content=?]", "1200"
+      assert_select "meta[property='og:image:height'][content=?]", "630"
+
+      twitter_image = assert_select("meta[name='twitter:image']").first["content"]
+      assert_match(%r{\Ahttps?://}, twitter_image, "twitter:image must be an absolute URL, got #{twitter_image.inspect}")
+    end
   end
 
   test "sitemap.xml lists only the public pages, never a game" do

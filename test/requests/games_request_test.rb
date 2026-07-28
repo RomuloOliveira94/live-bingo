@@ -255,4 +255,20 @@ class GamesRequestTest < ActionDispatch::IntegrationTest
       get game_path(code: "INVALID")
     end
   end
+
+  # robots.txt now allows crawlers to fetch game pages at all (see
+  # config/routes.rb's comment on the link-preview bugfix), so a
+  # facebookexternalhit/WhatsApp/Googlebot hit on a shared game link is
+  # expected traffic, not an edge case — and each would otherwise mint its
+  # own fresh visitor_token and count as a distinct "real" visit (see
+  # GameVisitTracker/BotDetector).
+  test "a crawler user agent visiting a game page does not record a GameVisit" do
+    game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
+
+    assert_no_difference "GameVisit.count" do
+      get game_path(code: game.code), headers: { "User-Agent" => "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)" }
+    end
+
+    assert_response :success
+  end
 end

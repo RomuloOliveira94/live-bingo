@@ -69,6 +69,20 @@ class GameVisitTrackerTest < ActiveSupport::TestCase
     end
   end
 
+  # robots.txt now lets crawlers fetch game pages at all (see
+  # config/routes.rb's comment — the whole point of the bugfix this covers),
+  # so every facebookexternalhit/WhatsApp/Googlebot hit on a shared game
+  # link mints a fresh visitor_token (see SessionData#ensure_session) and
+  # would otherwise land here indistinguishable from a real player.
+  test "does nothing for a known bot/crawler user agent" do
+    game = games(:one)
+    request = fake_request(user_agent: "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)")
+
+    assert_no_difference "GameVisit.count" do
+      GameVisitTracker.call(game: game, request: request, visitor_token: "bot-visitor", kind: :joined)
+    end
+  end
+
   test "rescues an internal failure instead of raising into the request" do
     request = fake_request
 

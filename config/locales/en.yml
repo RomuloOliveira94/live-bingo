@@ -12,7 +12,7 @@ en:
   seo:
     description: "Follow live bingo in real time — free, right in your browser, no app or sign-up."
     enter_description: "Enter the code your organizer shared with you and follow the live bingo draw in real time."
-    game_description: "Follow this live bingo draw in real time, together with everyone in the room."
+    game_description: "You've been invited to room %{code} — join now and follow this live bingo draw in real time, together with everyone in the room."
 
   nav:
     cta:

@@ -19,8 +19,12 @@ module SeoHelper
   # "index, follow" unless a view opts into something stricter — currently
   # only games/show.html.erb does, via content_for(:robots, "noindex,
   # nofollow"): game codes are ephemeral, private-by-URL, and must never be
-  # indexed (see also SeoController#robots and #sitemap, which keep /games
-  # out of the sitemap and out of crawling entirely).
+  # indexed. This is the layer that actually keeps a game page out of the
+  # index — robots.txt deliberately still allows crawling it (see
+  # config/routes.rb's comment) so link-preview crawlers like
+  # facebookexternalhit can fetch it and read this very tag; SeoController's
+  # sitemap simply never lists one, so it's never proactively suggested for
+  # indexing either.
   def page_robots
     content_for(:robots).presence || "index, follow"
   end

@@ -8,6 +8,14 @@
 # `unique_by` compiles to a single `INSERT ... ON CONFLICT DO NOTHING`, so a
 # returning visitor — or two concurrent requests racing each other — costs
 # the same one round-trip and never raises RecordNotUnique.
+#
+# Excludes known bots/crawlers (see BotDetector) — robots.txt deliberately
+# lets facebookexternalhit, search crawlers, etc. fetch game pages (see
+# config/routes.rb's comment) so link previews work, but every one of those
+# fetches would otherwise mint a fresh visitor_token (see
+# SessionData#ensure_session) and land here as an indistinguishable "real"
+# visit, inflating the very traffic numbers this table exists to report
+# accurately.
 class GameVisitTracker
   def self.call(game:, request:, visitor_token:, kind:) = new(game, request, visitor_token, kind).call
 
@@ -20,6 +28,7 @@ class GameVisitTracker
 
   def call
     return if @visitor_token.blank?
+    return if BotDetector.call(@request.user_agent)
 
     GameVisit.insert_all([ attributes ], unique_by: %i[visitor_token game_id])
   rescue StandardError => e
