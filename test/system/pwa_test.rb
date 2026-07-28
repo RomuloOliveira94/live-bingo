@@ -8,7 +8,7 @@ class PwaSystemTest < ApplicationSystemTestCase
 
   test "home has theme color meta" do
     visit root_path
-    assert_selector 'meta[name="theme-color"][content="#e11d48"]', visible: false
+    assert_selector 'meta[name="theme-color"][content="#141414"]', visible: false
   end
 
   test "home has favicon ico link" do

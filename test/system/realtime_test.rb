@@ -3,15 +3,15 @@ require "application_system_test_case"
 class RealtimeSystemTest < ApplicationSystemTestCase
   test "host starts game and sees active status" do
     visit root_path
-    click_link "Criar bingo"
+    click_button "Criar bingo"
 
     assert_selector "#game-code", wait: 5
-    assert_text "Aguardando"
+    assert_text(/Aguardando/i)
 
-    click_button "Iniciar bingo"
+    click_button "Iniciar sorteio"
 
-    assert_text "Em andamento"
-    assert_selector "button", text: "Sortear número"
+    assert_text(/ao vivo/i)
+    assert_selector "button", text: "Sortear bola"
   end
 
   test "viewer sees waiting message" do

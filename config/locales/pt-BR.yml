@@ -8,37 +8,46 @@ pt-BR:
       create: "Criar bingo"
       enter: "Entrar com código"
     enter:
-      title: "Entrar no bingo"
+      title: "Entrar em um bingo"
       code_label: "Código do bingo"
-      submit: "Entrar"
+      submit: "Entrar na sala"
     join:
       not_found: "Código não encontrado. Verifique e tente novamente."
 
   games:
     show:
       title: "Bingo"
-      finish_button: "Encerrar"
+      finish_button: "Encerrar bingo"
       confirm_finish: "Tem certeza que deseja encerrar? Esta ação não pode ser desfeita."
       confirm_restart: "Reiniciar vai apagar todos os números sorteados. Continuar?"
       waiting:
         visitor_message: "Aguardando o dono iniciar o jogo..."
-        start_button: "Iniciar bingo"
+        start_button: "Iniciar sorteio"
+        players_label:
+          zero: "Ninguém na sala ainda"
+          one: "1 pessoa esperada"
+          other: "%{count} pessoas esperadas"
       active:
-        draw_button: "Sortear número"
-        restart_button: "Reiniciar"
-        no_draws_yet: "Nenhum número sorteado ainda."
+        draw_button: "Sortear bola"
+        drawing: "Sorteando..."
+        restart_button: "Reiniciar partida"
+        no_draws_yet: "Aguardando primeiro sorteio"
       finished:
         message: "Este bingo foi encerrado."
       share:
         url_label: "Link para entrar"
       viewer_count:
-        zero: "Ninguém está assistindo"
+        zero: "Ninguém assistindo"
         one: "1 pessoa assistindo"
         other: "%{count} pessoas assistindo"
+      viewer_count_label:
+        zero: "esperada"
+        one: "esperada"
+        other: "esperadas"
       drawn_count:
-        zero: "Nenhum número sorteado"
-        one: "1 número sorteado"
-        other: "%{count} números sorteados"
+        zero: "Nenhuma bola sorteada"
+        one: "1 bola sorteada"
+        other: "%{count} bolas sorteadas"
 
   games.errors:
     game_not_active: "O bingo precisa estar ativo."

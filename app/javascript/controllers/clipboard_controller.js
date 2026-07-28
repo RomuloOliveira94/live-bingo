@@ -1,60 +1,24 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["source", "feedback"]
-  static values = {
-    text: String,
-    feedbackTimeout: { type: Number, default: 2000 }
-  }
+  static targets = ["feedback"]
+  static values = { text: String }
 
-  copy(event) {
-    event.preventDefault()
+  async copy(event) {
+    if (event) event.preventDefault()
 
-    const text = this.hasTextValue ? this.textValue : this._sourceText()
-    if (!text) return
-
-    this._copyToClipboard(text).then(() => this._showFeedback())
-  }
-
-  _sourceText() {
-    if (this.hasSourceTarget) {
-      return this.sourceTarget.textContent.trim() ||
-             this.sourceTarget.value ||
-             this.sourceTarget.dataset.clipboardText || ""
+    try {
+      await navigator.clipboard.writeText(this.textValue)
+      this.showFeedback()
+    } catch (e) {
+      prompt("Copie:", this.textValue)
     }
-    return ""
   }
 
-  _copyToClipboard(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-      return navigator.clipboard.writeText(text)
+  showFeedback() {
+    if (this.hasFeedbackTarget) {
+      this.feedbackTarget.classList.remove("hidden")
+      setTimeout(() => this.feedbackTarget.classList.add("hidden"), 2000)
     }
-
-    // Fallback for older browsers / non-secure contexts
-    return new Promise((resolve, reject) => {
-      const textarea = document.createElement("textarea")
-      textarea.value = text
-      textarea.setAttribute("readonly", "")
-      textarea.style.position = "absolute"
-      textarea.style.left = "-9999px"
-      document.body.appendChild(textarea)
-      textarea.select()
-      try {
-        document.execCommand("copy") ? resolve() : reject(new Error("copy failed"))
-      } catch (err) {
-        reject(err)
-      } finally {
-        document.body.removeChild(textarea)
-      }
-    })
-  }
-
-  _showFeedback() {
-    if (!this.hasFeedbackTarget) return
-    this.feedbackTarget.classList.remove("hidden")
-    clearTimeout(this._feedbackTimer)
-    this._feedbackTimer = setTimeout(() => {
-      this.feedbackTarget.classList.add("hidden")
-    }, this.feedbackTimeoutValue)
   }
 }

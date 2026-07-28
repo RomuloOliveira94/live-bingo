@@ -2,28 +2,29 @@
 
 <%= turbo_stream_from @game %>
 
-<div class="space-y-6">
-  <%# Header %>
-  <header class="flex items-center justify-between gap-3">
-    <div class="min-w-0">
-      <p class="text-xs sm:text-sm text-slate-500">
-        <span class="font-mono font-bold tracking-widest"><%= format_game_code(@game.code) %></span>
-        <span id="game-status" class="ml-2"><%= render "games/status_badge", game: @game %></span>
-      </p>
+<div class="py-6 space-y-6">
+  <%# Header minimalista %>
+  <header class="flex items-center justify-between px-1">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-full bg-bingo-red text-bingo-on-red font-bold text-xs flex items-center justify-center">B</div>
+      <span class="font-bold text-sm tracking-wide">BINGO AO VIVO</span>
     </div>
-    <% if is_host_of?(@game) && !@game.finished? %>
-      <%= button_to t("games.show.finish_button"), finish_game_path(code: @game.code), method: :post,
-            class: "rounded-lg border border-rose-300 bg-white hover:bg-rose-50 text-rose-700 text-sm font-medium px-3 py-2 transition-colors",
-            data: { turbo_confirm: t("games.show.confirm_finish") } %>
-    <% end %>
+    <div class="flex items-center gap-2 text-xs uppercase tracking-widest text-bingo-muted">
+      <% if @game.active? %>
+        <span class="inline-block w-2 h-2 rounded-full bg-bingo-red animate-live-pulse"></span>
+        <span>Sala <%= @game.code %> · ao vivo</span>
+      <% else %>
+        <span id="game-status"><%= render "games/status_badge", game: @game %></span>
+      <% end %>
+    </div>
   </header>
 
-  <%# Viewer count (everyone sees) %>
-  <div id="viewer-count" class="text-center text-sm text-slate-500">
+  <%# Viewer count %>
+  <div id="viewer-count" class="text-center text-xs text-bingo-muted">
     <%= render "games/viewer_count", game: @game %>
   </div>
 
-  <%# Waiting room (host) %>
+  <%# Waiting (host) %>
   <% if @game.waiting? && is_host_of?(@game) %>
     <%= render "games/waiting_host", game: @game %>
   <% end %>
@@ -31,47 +32,76 @@
   <%# Waiting (non-host) %>
   <% if @game.waiting? && !is_host_of?(@game) %>
     <div class="text-center space-y-4 py-8">
-      <p class="text-slate-600"><%= t("games.show.waiting.visitor_message") %></p>
+      <p class="text-bingo-muted"><%= t("games.show.waiting.visitor_message") %></p>
     </div>
   <% end %>
 
-  <%# Active or finished %>
+  <%# Active / Finished — layout ball + cartela geral %>
   <% if @game.active? || @game.finished? %>
-    <% last_draw = @game.draws.order(position: :desc).first %>
-    <div id="last-ball" class="text-center">
-      <%= render "games/last_ball", draw: last_draw %>
-    </div>
+    <div class="grid md:grid-cols-2 gap-6">
+      <%# Lado esquerdo: bola %>
+      <div class="flex flex-col items-center gap-5 py-2">
+        <div id="last-ball" data-controller="draw-sound">
+          <%= render "games/last_ball", draw: @game.draws.order(position: :desc).first %>
+        </div>
 
-    <div id="draw-history">
-      <%= render "games/draw_history", draws: @game.draws.order(position: :desc) %>
-    </div>
+        <% if is_host_of?(@game) && @game.active? %>
+          <%= button_to t("games.show.active.draw_button"), draw_game_path(code: @game.code), method: :post,
+              class: "w-full max-w-xs py-4 bg-bingo-red text-bingo-on-red rounded-2xl font-bold text-base hover:brightness-90",
+              data: { turbo_submits_with: t("games.show.active.drawing") } %>
+        <% end %>
 
-    <div id="drawn-count" class="text-center text-sm text-slate-500">
-      <%= render "games/drawn_count", game: @game %>
-    </div>
-
-    <%# Host controls (active only) %>
-    <% if @game.active? && is_host_of?(@game) %>
-      <div class="space-y-3">
-        <%= button_to t("games.show.active.draw_button"), draw_game_path(code: @game.code), method: :post,
-              class: "w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-lg font-semibold py-4 px-6 transition-colors shadow-sm" %>
-        <%= button_to t("games.show.active.restart_button"), restart_game_path(code: @game.code), method: :post,
-              class: "w-full rounded-lg bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white text-lg font-semibold py-4 px-6 transition-colors shadow-sm",
-              data: { turbo_confirm: t("games.show.confirm_restart") } %>
+        <div class="flex gap-2 items-center min-h-[40px]">
+          <span class="text-[11px] uppercase tracking-widest text-bingo-muted">Últimas</span>
+          <div id="draw-history" class="flex gap-2">
+            <%= render "games/draw_history", draws: @game.draws.order(position: :desc).limit(5) %>
+          </div>
+        </div>
       </div>
-    <% end %>
+
+      <%# Lado direito: cartela geral 75 números + reiniciar %>
+      <div class="flex flex-col gap-3">
+        <div class="flex justify-between items-baseline">
+          <span class="text-xs uppercase tracking-widest text-bingo-muted">Cartela geral</span>
+          <div id="drawn-count">
+            <%= render "games/drawn_count", game: @game %>
+          </div>
+        </div>
+
+        <div id="board">
+          <%= render "games/board", game: @game %>
+        </div>
+
+        <% if is_host_of?(@game) && @game.active? %>
+          <%= button_to t("games.show.active.restart_button"), restart_game_path(code: @game.code), method: :post,
+              class: "self-start mt-2 px-4 py-2 border border-bingo-line rounded-full text-sm text-bingo-muted hover:text-bingo-red hover:border-bingo-red",
+              data: { turbo_confirm: t("games.show.confirm_restart") } %>
+        <% end %>
+      </div>
+    </div>
   <% end %>
 
-  <%# Finished (viewer sees end) %>
+  <%# Finished (non-host) %>
   <% if @game.finished? && !is_host_of?(@game) %>
-    <p class="text-center text-slate-600"><%= t("games.show.finished.message") %></p>
+    <div class="text-center py-4 text-bingo-muted">
+      <p><%= t("games.show.finished.message") %></p>
+    </div>
   <% end %>
 
-  <%# Finished (host sees end) %>
+  <%# Finished (host) %>
   <% if @game.finished? && is_host_of?(@game) %>
-    <div class="text-center space-y-4">
-      <p class="text-slate-600"><%= t("games.show.finished.message") %></p>
-      <%= link_to t("pages.home.create"), root_path, class: "inline-block rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold px-6 py-3 transition-colors" %>
+    <div class="text-center space-y-4 py-4">
+      <p class="text-bingo-muted"><%= t("games.show.finished.message") %></p>
+      <%= link_to t("pages.home.create"), root_path, class: "inline-block py-3 px-6 bg-bingo-red text-bingo-on-red rounded-2xl font-bold text-sm hover:brightness-90" %>
+    </div>
+  <% end %>
+
+  <%# Finish button (host) — sempre visível quando não finished %>
+  <% if is_host_of?(@game) && !@game.finished? %>
+    <div class="text-center">
+      <%= button_to t("games.show.finish_button"), finish_game_path(code: @game.code), method: :post,
+          class: "text-xs text-bingo-muted underline",
+          data: { turbo_confirm: t("games.show.confirm_finish") } %>
     </div>
   <% end %>
 </div>

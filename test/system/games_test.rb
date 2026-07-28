@@ -4,38 +4,38 @@ class GamesSystemTest < ApplicationSystemTestCase
   test "home renders 2 buttons" do
     visit root_path
 
-    assert_selector "h1", text: "Bingo"
-    assert_selector "a", text: "Criar bingo"
+    assert_selector "h1", text: /Crie uma sala de bingo/i
+    assert_selector "button", text: "Criar bingo"
     assert_selector "a", text: "Entrar com código"
   end
 
   test "host creates game and sees waiting room" do
     visit root_path
 
-    click_link "Criar bingo"
+    click_button "Criar bingo"
 
     # Should land on waiting room with the game code visible
     assert_selector "#game-code", wait: 5
-    assert_selector "button", text: "Iniciar bingo"
-    assert_text "Aguardando"
+    assert_selector "button", text: "Iniciar sorteio"
+    assert_text(/Aguardando/i)
   end
 
   test "host draws number updates view" do
     # Host creates game
     visit root_path
-    click_link "Criar bingo"
+    click_button "Criar bingo"
 
-    assert_selector "button", text: "Iniciar bingo", wait: 5
+    assert_selector "button", text: "Iniciar sorteio", wait: 5
 
     # Start the game
-    click_button "Iniciar bingo"
+    click_button "Iniciar sorteio"
 
     # Should now see active game UI
-    assert_text "Em andamento"
-    assert_selector "button", text: "Sortear número"
+    assert_text(/ao vivo/i)
+    assert_selector "button", text: "Sortear bola"
 
     # Draw a number
-    click_button "Sortear número"
+    click_button "Sortear bola"
 
     # Should see a number in the ball (not the placeholder)
     within "#last-ball" do
@@ -46,15 +46,15 @@ class GamesSystemTest < ApplicationSystemTestCase
   test "host restarts clears draws" do
     # Host creates game
     visit root_path
-    click_link "Criar bingo"
+    click_button "Criar bingo"
 
-    assert_selector "button", text: "Iniciar bingo", wait: 5
+    assert_selector "button", text: "Iniciar sorteio", wait: 5
 
     # Start the game
-    click_button "Iniciar bingo"
+    click_button "Iniciar sorteio"
 
     # Draw a number
-    click_button "Sortear número"
+    click_button "Sortear bola"
 
     # Wait for ball to appear
     within "#last-ball" do
@@ -63,7 +63,7 @@ class GamesSystemTest < ApplicationSystemTestCase
 
     # Accept the confirm dialog
     accept_confirm do
-      click_button "Reiniciar"
+      click_button "Reiniciar partida"
     end
 
     # Ball should be back to placeholder
@@ -80,7 +80,7 @@ class GamesSystemTest < ApplicationSystemTestCase
     visit root_path
     click_link "Entrar com código"
     fill_in "Código do bingo", with: game.code
-    click_button "Entrar"
+    click_button "Entrar na sala"
 
     # Should see the game page
     assert_text "Aguardando o dono iniciar o jogo", wait: 5

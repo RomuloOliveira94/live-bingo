@@ -2,11 +2,6 @@
   Locals:
     game - Game instance
 %>
-<span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-  <%= case game.status
-      when "waiting" then "bg-slate-100 text-slate-700"
-      when "active" then "bg-emerald-100 text-emerald-700"
-      when "finished" then "bg-rose-100 text-rose-700"
-      end %>">
-  <%= human_game_status(game.status) %>
+<span class="text-xs uppercase tracking-widest text-bingo-muted">
+  <%= t("statuses.game.#{game.status}") %>
 </span>

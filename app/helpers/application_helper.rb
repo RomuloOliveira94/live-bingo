@@ -15,4 +15,14 @@ module ApplicationHelper
   def is_host_of?(game)
     Current.host_of?(game)
   end
+
+  def bingo_letter(number)
+    case number
+    when 1..15  then "B"
+    when 16..30 then "I"
+    when 31..45 then "N"
+    when 46..60 then "G"
+    when 61..75 then "O"
+    end
+  end
 end
