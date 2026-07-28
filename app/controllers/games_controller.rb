@@ -69,7 +69,7 @@ class GamesController < ApplicationController
   # redirect element (see redirect_controller.js) that Turbo.visit()s
   # everyone away after a short delay so they have time to read it.
   def broadcast_finished_notice
-    Turbo::StreamsChannel.broadcast_replace_to(
+    Turbo::StreamsChannel.broadcast_update_to(
       @game, target: "flash", partial: "layouts/flash",
              locals: { notice: t("games.show.finished.message"), alert: nil }
     )

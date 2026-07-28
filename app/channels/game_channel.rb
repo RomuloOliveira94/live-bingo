@@ -23,7 +23,7 @@ class GameChannel < ApplicationCable::Channel
   private
 
   def broadcast_viewer_count
-    Turbo::StreamsChannel.broadcast_replace_to(
+    Turbo::StreamsChannel.broadcast_update_to(
       @game, target: "viewer-count", partial: "games/viewer_count", locals: { game: @game.reload }
     )
   end

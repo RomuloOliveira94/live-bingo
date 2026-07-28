@@ -14,10 +14,16 @@ require "turbo/broadcastable/test_helper"
 class RealtimeTest < ActionDispatch::IntegrationTest
   include Turbo::Broadcastable::TestHelper
 
-  test "draw broadcasts the ball, history, drawn count, and board" do
+  test "draw broadcasts an update (not a replace) for each fragment, so every wrapper's id survives for the next draw" do
     game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
     game.update!(status: :active, started_at: Time.current)
     sign_in_as_host(game)
+
+    # The full-page render is the source of truth for where each fragment's
+    # id-bearing wrapper lives. A broadcast that can't find a matching id in
+    # here has nowhere to land on a connected guest's page.
+    get game_path(code: game.code)
+    rendered_page = Nokogiri::HTML5.parse(response.body)
 
     streams = nil
     assert_difference "Draw.count", 1 do
@@ -27,6 +33,28 @@ class RealtimeTest < ActionDispatch::IntegrationTest
 
     targets = streams.map { |stream| stream["target"] }
     assert_equal %w[last-ball draw-history drawn-count board].sort, targets.sort
+
+    streams.each do |stream|
+      target = stream["target"]
+
+      # This is the crux of the regression: `replace` swaps out the
+      # id-bearing wrapper itself, so a SECOND draw would have nothing left
+      # to target and would be silently dropped by the browser — exactly
+      # what left guests frozen on draw #1. `update` replaces only the
+      # wrapper's children, keeping the id alive for every future draw.
+      assert_equal "update", stream["action"],
+        "##{target} must be updated in place, not replaced, or its id is destroyed after the first broadcast"
+
+      assert rendered_page.at_css("##{target}"),
+        "##{target} must exist in the full-page render for the broadcast to have anywhere to land"
+
+      # Guard against a partial re-introducing its own id="#{target}" root
+      # node: `update` inserts the partial's markup AS A CHILD of the
+      # existing wrapper, so a partial that duplicates the id would nest it
+      # one level deeper instead of fixing anything.
+      assert_nil stream.at_css("##{target}"),
+        "the \"#{target}\" partial must not render its own id=\"#{target}\" element — update() nests it as a child of the wrapper that already owns that id"
+    end
   end
 
   test "restart clears draws and broadcasts a full page refresh" do
@@ -69,7 +97,7 @@ class RealtimeTest < ActionDispatch::IntegrationTest
     assert_equal "finished", game.status
 
     actions_by_target = streams.each_with_object({}) { |stream, memo| memo[stream["target"]] = stream["action"] }
-    assert_equal "replace", actions_by_target["flash"]
+    assert_equal "update", actions_by_target["flash"]
     assert_equal "append", actions_by_target["redirect-slot"]
   end
 end

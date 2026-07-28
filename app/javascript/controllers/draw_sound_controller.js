@@ -20,7 +20,7 @@ export default class extends Controller {
 
   handleChange() {
     const current = this.ballText()
-    if (current && current !== this.previousNumber && current !== "—") {
+    if (current && current !== this.previousNumber) {
       this.play()
     }
     this.previousNumber = current

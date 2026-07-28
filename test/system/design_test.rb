@@ -39,10 +39,21 @@ class DesignSystemTest < ApplicationSystemTestCase
     click_button "Iniciar sorteio", wait: 5
     click_button "Sortear bola"
 
+    # Wait for the draw to actually land in the DOM before querying the DB
+    # for it — the click redirects, so the record isn't guaranteed to exist
+    # the instant control returns here.
+    assert_selector "#last-ball .bingo-ring", wait: 5
+
+    draw = Game.order(:created_at).last.draws.order(:position).last
+    letter = { 1..15 => "B", 16..30 => "I", 31..45 => "N", 46..60 => "G", 61..75 => "O" }
+      .find { |range, _| range.cover?(draw.number) }.last
+
+    # Exact letter+number pairing for the actual draw — not just "any of
+    # B/I/N/G/O appears somewhere", which a regex character class like
+    # /[BINGO]/ would satisfy almost unconditionally. Letter and number are
+    # separate <span> nodes, hence the \s* between them.
     within "#last-ball" do
-      assert_no_text "—", wait: 5
-      # Should contain a BINGO letter (B, I, N, G, or O) and a number
-      assert_text(/[BINGO]/)
+      assert_text(/#{letter}\s*#{draw.number}\b/, wait: 5)
     end
   end
 
