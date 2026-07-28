@@ -4,6 +4,16 @@ en:
     tagline: "Live bingo caller"
     wordmark: "Live Bingo!"
 
+  # Crawler/social-facing copy — meta description, Open Graph, Twitter Card,
+  # and the JSON-LD structured data's own description (see SeoHelper and
+  # layouts/_seo_head.html.erb). `seo.description` doubles as the site-wide
+  # default description; individual pages override it via
+  # `content_for(:description, ...)` where a more specific one makes sense.
+  seo:
+    description: "Follow live bingo in real time — free, right in your browser, no app or sign-up."
+    enter_description: "Enter the code your organizer shared with you and follow the live bingo draw in real time."
+    game_description: "Follow this live bingo draw in real time, together with everyone in the room."
+
   nav:
     cta:
       create: "Create"

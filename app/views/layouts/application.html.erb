@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="<%= I18n.locale %>">
   <head>
-    <title><%= content_for(:title) ? "#{yield(:title)} · #{t('app.name')}" : t('app.name') %></title>
+    <title><%= page_title %></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
+
+    <%= render "layouts/seo_head" %>
 
     <%# PWA %>
     <meta name="apple-mobile-web-app-capable" content="yes">

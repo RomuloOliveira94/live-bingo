@@ -1,4 +1,9 @@
 <% content_for :title, t("games.show.title") %>
+<% content_for :description, t("seo.game_description") %>
+<%# Game codes are ephemeral, private-by-URL rooms — never let a search
+    engine index one (see SeoController#sitemap and public robots.txt for
+    the other two layers of the same guard). %>
+<% content_for :robots, "noindex, nofollow" %>
 
 <%= turbo_stream_from @game %>
 

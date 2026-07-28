@@ -1,4 +1,8 @@
-<% content_for :title, t("app.name") %>
+<%# Home's own descriptive <title> (distinct from the app name, which the
+    layout already appends after " · " — see SeoHelper#page_title). Reuses
+    the existing tagline rather than a new key: it's the same "what is this"
+    one-liner already shown in the PWA manifest. %>
+<% content_for :title, t("app.tagline") %>
 
 <div class="pt-11 px-7 pb-12 flex flex-col items-center gap-7">
   <div class="text-center max-w-[460px] flex flex-col gap-2.5">

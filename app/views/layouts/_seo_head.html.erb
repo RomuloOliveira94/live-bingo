@@ -1,0 +1,43 @@
+<%# Per-page SEO/social metadata — see SeoHelper for how each value is
+    resolved. <title> itself is set directly in application.html.erb's
+    <head> (not here) since it isn't a <meta>/<link> tag. %>
+<meta name="description" content="<%= page_description %>">
+<meta name="robots" content="<%= page_robots %>">
+
+<link rel="canonical" href="<%= canonical_url %>">
+
+<%# hreflang alternates: this app has no locale-prefixed URLs — the SAME
+    path serves pt-BR or en depending on Accept-Language/CF-IPCountry (see
+    LocaleResolver) — so every page is content-negotiated at a single URL
+    rather than living at separate /pt-BR and /en paths. Google explicitly
+    supports this pattern (content negotiation, ideally paired with a `Vary:
+    Accept-Language` response header — see ApplicationController), so each
+    language variant's hreflang simply self-references this one URL, plus
+    x-default for anything else. Do not "fix" this into per-locale URLs
+    without also splitting the routes; that's a much bigger change than a
+    tag fix. %>
+<link rel="alternate" hreflang="pt-BR" href="<%= canonical_url %>">
+<link rel="alternate" hreflang="en" href="<%= canonical_url %>">
+<link rel="alternate" hreflang="x-default" href="<%= canonical_url %>">
+
+<%# Open Graph %>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="<%= t('app.name') %>">
+<meta property="og:title" content="<%= page_title %>">
+<meta property="og:description" content="<%= page_description %>">
+<meta property="og:url" content="<%= canonical_url %>">
+<meta property="og:image" content="<%= og_image_url %>">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="<%= og_locale %>">
+<meta property="og:locale:alternate" content="<%= og_locale_alternate %>">
+
+<%# Twitter Card %>
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<%= page_title %>">
+<meta name="twitter:description" content="<%= page_description %>">
+<meta name="twitter:image" content="<%= og_image_url %>">
+
+<script type="application/ld+json">
+<%= structured_data.to_json.html_safe %>
+</script>

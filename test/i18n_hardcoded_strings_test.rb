@@ -7,7 +7,13 @@ class I18nHardcodedStringsTest < ActiveSupport::TestCase
   # PWA manifest is a JSON data file, not HTML prose — most of its string
   # values are technical (MIME types, sizes, "standalone", "ltr"...), so it's
   # exempt from the HTML text-node scan below. It's checked separately.
-  VIEW_FILES = Dir.glob(Rails.root.join("app/views/**/*.erb")).reject { |f| f.end_with?(".json.erb") }.freeze
+  #
+  # robots.txt is likewise a plain-text crawler protocol file, not user-facing
+  # prose — "User-agent: *"/"Disallow: /games/"/"Sitemap:" are protocol
+  # keywords, not copy anyone reads or that needs a pt-BR translation (see
+  # app/views/seo/robots.text.erb).
+  VIEW_FILES = Dir.glob(Rails.root.join("app/views/**/*.erb"))
+    .reject { |f| f.end_with?(".json.erb", ".text.erb") }.freeze
 
   # Matches one HTML tag, treating `>` inside quoted attribute values (e.g.
   # Stimulus's `turbo:submit-start->controller#action`) as non-terminating.
