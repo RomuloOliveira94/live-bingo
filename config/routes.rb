@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
+  get "/manifest" => "rails/pwa#manifest", defaults: { format: :json }
+  get "/service-worker" => "rails/pwa#service_worker", defaults: { format: :js }
+
   root "pages#home"
 
   resources :games, only: [ :create, :show ], param: :code do

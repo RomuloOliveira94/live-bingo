@@ -1,13 +1,22 @@
+<%# frozen_string_literal: true %>
 {
-  "name": "LiveBingo",
+  "name": "Bingo",
+  "short_name": "Bingo",
   "icons": [
     {
-      "src": "/icon.png",
+      "src": "/icon-192.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "192x192",
+      "purpose": "any"
     },
     {
-      "src": "/icon.png",
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
@@ -16,7 +25,11 @@
   "start_url": "/",
   "display": "standalone",
   "scope": "/",
-  "description": "LiveBingo.",
-  "theme_color": "red",
-  "background_color": "red"
+  "description": "<%= t('app.tagline') %>",
+  "theme_color": "#e11d48",
+  "background_color": "#f8fafc",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["entertainment", "games"],
+  "orientation": "portrait"
 }

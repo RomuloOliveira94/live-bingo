@@ -3,18 +3,27 @@
   <head>
     <title><%= content_for(:title) ? "#{yield(:title)} · #{t('app.name')}" : t('app.name') %></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+
+    <%# PWA %>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="<%= t('app.name') %>">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#e11d48">
+    <meta name="apple-mobile-web-app-title" content="<%= t('app.name') %>">
+
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= action_cable_meta_tag %>
 
     <%= yield :head %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
+    <%# Favicon + ícones %>
+    <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
 
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
