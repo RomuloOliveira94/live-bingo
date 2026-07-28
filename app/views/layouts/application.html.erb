@@ -43,7 +43,16 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="min-h-screen bg-bingo-bg text-bingo-fg antialiased">
+  <%# Sticky-footer shell: a full-height flex column so <main> (flex-1)
+      absorbs any leftover space and the footer sits at the bottom of the
+      viewport on short pages, while still scrolling normally once content
+      overflows. `dvh`, not `vh` — on mobile browsers `vh` includes the
+      space behind the collapsing URL bar and causes a phantom scroll /
+      cut-off footer; `dvh` tracks the *actual* visible viewport. Only
+      `body` gets a height utility (not `html` too), so there's a single
+      source of truth for viewport height and no nested-overflow / double
+      scrollbar. %>
+  <body class="min-h-dvh flex flex-col bg-bingo-bg text-bingo-fg antialiased">
     <%= render "layouts/navbar" %>
 
     <div id="flash">
@@ -65,7 +74,13 @@
       <%= render "layouts/flash", notice: t("games.show.finished.message"), alert: nil %>
     </template>
 
-    <main class="<%= shared_container_class %> pt-7 pb-14">
+    <%# flex-1 makes this the one growing region between the fixed-size
+        navbar and footer (see body's comment above). Content stays
+        top-aligned rather than vertically centered in the extra height —
+        matches the design mock, where every screen (home, entrar, game)
+        is laid out with fixed top padding and flows downward, never
+        vertically centered within its frame. %>
+    <main class="<%= shared_container_class %> flex-1 pt-7 pb-14">
       <%= yield %>
     </main>
 
