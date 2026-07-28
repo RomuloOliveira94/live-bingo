@@ -47,6 +47,7 @@ export default class extends Controller {
   connect() {
     this.spinning = false
     this.startedAt = 0
+    this.preSpinSnapshot = { letter: "", number: "", hidden: true }
     this.flickerTimer = null
     this.watchdogTimer = null
     this.beforeStreamRenderListener = this.holdBeforeStreamRender.bind(this)
@@ -92,6 +93,20 @@ export default class extends Controller {
     const stream = event.target
     if (stream.target !== "last-ball") return
 
+    // The actor's own draw is rendered inline (fast, straight off the HTTP
+    // response) AND broadcast over Action Cable (see this file's top
+    // comment) — two deliveries of the same reveal. Normally the second one
+    // arrives while `spinning` is still true, so beginSpin's reentry guard
+    // below absorbs it for free. But if it's delayed past minDuration
+    // (cable congestion, a reconnect backlog), `spinning` has already gone
+    // back to false by the time it lands — without this check, beginSpin
+    // would run a full phantom re-spin: a second draw sound and a second
+    // settle animation onto a number that's already sitting in the ring.
+    // Numbers are drawn without replacement within a game (see
+    // DrawService), so a match here can only mean "this exact draw already
+    // landed," never a different draw that happens to share a number.
+    if (!this.spinning && this.matchesRingNumber(stream)) return
+
     this.beginSpin()
 
     const elapsed = Date.now() - this.startedAt
@@ -109,11 +124,30 @@ export default class extends Controller {
     })
   }
 
+  // Reads the ball number straight out of the incoming stream's own
+  // template — never cached/derived state — and compares it against
+  // whatever the ring is currently displaying.
+  matchesRingNumber(stream) {
+    if (!this.hasNumberTarget) return false
+
+    const incoming = stream.templateContent.querySelector("[data-spin-target='number']")
+    const incomingNumber = incoming?.textContent?.trim()
+    if (!incomingNumber) return false
+
+    return incomingNumber === this.numberTarget.textContent.trim()
+  }
+
   beginSpin() {
     if (this.spinning) return
 
     this.spinning = true
     this.startedAt = Date.now()
+    // Must happen before anything below mutates the ring — including the
+    // "invisible" class toggle a couple of lines down — so the very first
+    // spin of a game (no ball drawn yet) is captured as hidden rather than
+    // whatever flickerTick is about to write into it. See
+    // recoverFromWatchdog for where this gets used.
+    this.snapshotRing()
     if (this.hasCageTarget) this.cageTarget.classList.add("is-spinning")
     if (this.hasRingTarget) this.ringTarget.classList.remove("invisible")
     if (this.hasButtonTarget) this.buttonTarget.disabled = true
@@ -145,12 +179,39 @@ export default class extends Controller {
   // does end normally, so this never fires on the happy path.
   armWatchdog() {
     this.disarmWatchdog()
-    this.watchdogTimer = setTimeout(() => this.endSpin(), this.watchdogValue)
+    this.watchdogTimer = setTimeout(() => this.recoverFromWatchdog(), this.watchdogValue)
   }
 
   disarmWatchdog() {
     if (this.watchdogTimer) clearTimeout(this.watchdogTimer)
     this.watchdogTimer = null
+  }
+
+  // Unlike the normal settle path (endSpin called from
+  // holdBeforeStreamRender, immediately followed by the real drawn number
+  // landing via originalRender), nothing is about to paint real content
+  // here — the watchdog firing means no reveal ever arrived at all. Left
+  // alone, the ring would keep showing whatever random number flickerTick
+  // last wrote into it: a ball that was never actually drawn. Put back
+  // whatever the ring displayed right before this spin started instead.
+  recoverFromWatchdog() {
+    this.endSpin()
+    this.restoreRingSnapshot()
+  }
+
+  snapshotRing() {
+    this.preSpinSnapshot = {
+      letter: this.hasLetterTarget ? this.letterTarget.textContent : "",
+      number: this.hasNumberTarget ? this.numberTarget.textContent : "",
+      hidden: this.hasRingTarget ? this.ringTarget.classList.contains("invisible") : true
+    }
+  }
+
+  restoreRingSnapshot() {
+    const { letter, number, hidden } = this.preSpinSnapshot
+    if (this.hasLetterTarget) this.letterTarget.textContent = letter
+    if (this.hasNumberTarget) this.numberTarget.textContent = number
+    if (this.hasRingTarget) this.ringTarget.classList.toggle("invisible", hidden)
   }
 
   startFlicker() {
