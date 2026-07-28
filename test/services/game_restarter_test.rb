@@ -12,6 +12,15 @@ class GameRestarterTest < ActiveSupport::TestCase
     assert_equal 0, game.draws.count
   end
 
+  test "resets viewer_count so an abandoned subscription's drift doesn't persist across a restart" do
+    game = games(:two) # active
+    game.update!(viewer_count: 4)
+
+    GameRestarter.call(game: game)
+
+    assert_equal 0, game.viewer_count
+  end
+
   test "raises GameNotActive for waiting game" do
     game = games(:one) # waiting
 

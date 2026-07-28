@@ -25,7 +25,7 @@ class GamesController < ApplicationController
   end
 
   def finish
-    @game.update!(status: :finished, finished_at: Time.current)
+    @game.update!(status: :finished, finished_at: Time.current, viewer_count: 0)
     # Deliberately no broadcast_refresh_to here: a full-page morph refresh
     # races with the ephemeral redirect-slot append below (the refresh's
     # fetch resolves against a fresh GET, which has no redirect element, and

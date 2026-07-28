@@ -11,6 +11,10 @@ class GameRestarter
     raise GameNotActive, "Game is not active" unless @game.active?
 
     @game.draws.destroy_all
+    # Reset the presence counter too: a restart is a fresh start for the
+    # room, and this keeps abandoned/crashed subscriptions (which never got
+    # to send their decrement) from leaving a permanent upward drift.
+    @game.update!(viewer_count: 0)
     broadcast_restart
   end
 

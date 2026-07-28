@@ -95,7 +95,7 @@ class GamesRequestTest < ActionDispatch::IntegrationTest
 
   test "host can finish" do
     game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
-    game.update!(status: :active)
+    game.update!(status: :active, viewer_count: 3)
     sign_in_as_host(game)
 
     post finish_game_path(code: game.code)
@@ -105,6 +105,10 @@ class GamesRequestTest < ActionDispatch::IntegrationTest
     game.reload
     assert_equal "finished", game.status
     assert_not_nil game.finished_at
+    # Abandoned/crashed subscriptions never send their decrement, so a
+    # finished game resets the counter rather than carrying that drift
+    # forward forever.
+    assert_equal 0, game.viewer_count
   end
 
   test "non-host cannot finish" do
