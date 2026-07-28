@@ -11,7 +11,7 @@ class ViewerCountLiveTest < ApplicationSystemTestCase
 
     Capybara.using_session(:guest_one) do
       visit game_path(code: code)
-      assert_text "Aguardando o dono iniciar o jogo", wait: 5
+      assert_text "Aguardando início do bingo", wait: 5
     end
 
     # Guest joined: host should now see 2

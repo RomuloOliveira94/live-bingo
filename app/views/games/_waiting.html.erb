@@ -1,0 +1,39 @@
+<%# Waiting screen: shown to everyone (host and guest alike) while the game
+  hasn't started yet. Host and guest see the identical room-code panel,
+  copy/share controls, and live player counter — the only differences are
+  the heading copy and the "Iniciar sorteio" button, which stays host-only.
+  This is a rendering-only distinction: GamesController#require_host! still
+  404s a non-host's own start/draw/restart/finish requests server-side,
+  completely independent of what's drawn here.
+  Locals:
+    game - Game instance
+%>
+<% host = is_host_of?(game) %>
+<div class="flex flex-col items-center gap-[26px] text-center">
+  <div class="flex flex-col items-center gap-2">
+    <% if host %>
+      <span class="font-display text-xs uppercase tracking-[0.1em] text-bingo-muted"><%= t("games.show.waiting.eyebrow") %></span>
+    <% end %>
+    <h1 class="font-display font-bold text-[30px] tracking-[-0.02em] m-0">
+      <%= host ? t("games.show.waiting.heading") : t("games.show.waiting.guest_heading") %>
+    </h1>
+    <div id="viewer-count" class="mt-0.5">
+      <%= render "games/viewer_count", game: game %>
+    </div>
+  </div>
+
+  <div class="w-full max-w-[420px] box-border py-[30px] px-6 border-[1.5px] border-dashed border-bingo-accent bg-bingo-accent-soft rounded-[18px] flex flex-col items-center gap-3.5">
+    <span class="font-display text-xs uppercase tracking-[0.1em] text-bingo-muted"><%= t("games.show.waiting.code_eyebrow") %></span>
+    <div id="game-code" class="font-display font-bold text-[42px] tracking-[0.16em] text-bingo-accent select-all">
+      <%= format_game_code(game.code) %>
+    </div>
+    <%= render "games/share", game: game %>
+  </div>
+
+  <% if host %>
+    <div class="w-full max-w-[420px]">
+      <%= button_to t("games.show.waiting.start_button"), start_game_path(code: game.code), method: :post,
+          class: "w-full #{btn_primary_classes}" %>
+    </div>
+  <% end %>
+</div>

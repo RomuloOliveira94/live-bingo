@@ -84,6 +84,6 @@ class GamesSystemTest < ApplicationSystemTestCase
     click_button "Entrar na sala"
 
     # Should see the game page
-    assert_text "Aguardando o dono iniciar o jogo", wait: 5
+    assert_text "Aguardando início do bingo", wait: 5
   end
 end

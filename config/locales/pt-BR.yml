@@ -36,11 +36,10 @@ pt-BR:
       confirm_finish: "Tem certeza que deseja encerrar? Esta ação não pode ser desfeita."
       confirm_restart: "Reiniciar vai apagar todos os números sorteados. Continuar?"
       waiting:
-        visitor_message: "Aguardando o dono iniciar o jogo..."
         start_button: "Iniciar sorteio"
-        players_hint: "Os jogadores aparecem aqui em tempo real assim que entram."
         eyebrow: "Sala criada"
         heading: "Chame a galera"
+        guest_heading: "Aguardando início do bingo"
         players_label:
           one: "jogador na sala"
           other: "jogadores na sala"

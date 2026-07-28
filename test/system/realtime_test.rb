@@ -19,6 +19,6 @@ class RealtimeSystemTest < ApplicationSystemTestCase
 
     visit game_path(code: game.code)
 
-    assert_text "Aguardando o dono iniciar o jogo"
+    assert_text "Aguardando início do bingo"
   end
 end

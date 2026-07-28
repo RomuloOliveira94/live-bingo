@@ -36,11 +36,10 @@ en:
       confirm_finish: "Are you sure you want to finish? This cannot be undone."
       confirm_restart: "Restart will clear all drawn numbers. Continue?"
       waiting:
-        visitor_message: "Waiting for the host to start the game..."
         start_button: "Start draw"
-        players_hint: "Players appear here in real time as they join."
         eyebrow: "Room created"
         heading: "Call the crowd"
+        guest_heading: "Waiting for the bingo to start"
         players_label:
           one: "player in the room"
           other: "players in the room"

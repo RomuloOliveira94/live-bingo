@@ -9,7 +9,7 @@ class GuestSecondDrawTest < ApplicationSystemTestCase
 
     Capybara.using_session(:guest) do
       visit game_path(code: code)
-      assert_text "Aguardando o dono iniciar o jogo", wait: 5
+      assert_text "Aguardando início do bingo", wait: 5
     end
 
     click_button "Iniciar sorteio"

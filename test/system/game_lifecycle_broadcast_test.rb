@@ -16,16 +16,16 @@ class GameLifecycleBroadcastTest < ApplicationSystemTestCase
 
     Capybara.using_session(:guest) do
       visit game_path(code: code)
-      assert_text "Aguardando o dono iniciar o jogo"
+      assert_text "Aguardando início do bingo"
     end
 
     click_button "Iniciar sorteio"
     assert_text(/ao vivo/i, wait: 5)
 
     Capybara.using_session(:guest) do
-      # Guest must transition from the waiting message straight to the Live
+      # Guest must transition from the waiting screen straight to the Live
       # screen, without a manual reload, purely from the broadcasted refresh.
-      assert_no_text "Aguardando o dono iniciar o jogo", wait: 5
+      assert_no_text "Aguardando início do bingo", wait: 5
       assert_text(/ao vivo/i, wait: 5)
     end
 

@@ -5,14 +5,9 @@
 <div class="flex flex-col gap-6 <%= @game.waiting? ? "pt-11 px-7 pb-12" : "p-[26px]" %>"
      data-controller="game-channel" data-game-channel-code-value="<%= @game.code %>">
 
-  <%# Waiting (host) — Share screen %>
-  <% if @game.waiting? && is_host_of?(@game) %>
-    <%= render "games/waiting_host", game: @game %>
-  <% end %>
-
-  <%# Waiting (non-host) %>
-  <% if @game.waiting? && !is_host_of?(@game) %>
-    <%= render "games/waiting_guest" %>
+  <%# Waiting — Share screen (host and guest, see games/_waiting) %>
+  <% if @game.waiting? %>
+    <%= render "games/waiting", game: @game %>
   <% end %>
 
   <%# Active / Finished — Live screen %>
