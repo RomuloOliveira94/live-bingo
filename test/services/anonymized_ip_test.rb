@@ -2,7 +2,7 @@ require "test_helper"
 
 class AnonymizedIpTest < ActiveSupport::TestCase
   test "zeroes the last octet of an IPv4 address" do
-    assert_equal "189.45.32.0", AnonymizedIp.call("189.45.32.77")
+    assert_equal "203.0.113.0", AnonymizedIp.call("203.0.113.77")
   end
 
   test "truncates an IPv6 address to its /64 network prefix" do

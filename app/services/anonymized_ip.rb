@@ -1,7 +1,7 @@
 require "ipaddr"
 
 # Anonymizes a visitor's IP for storage: zero the last octet for IPv4
-# (189.45.32.77 -> 189.45.32.0), truncate to the /64 network prefix for
+# (203.0.113.77 -> 203.0.113.0), truncate to the /64 network prefix for
 # IPv6. Never stores (or returns) the raw address.
 class AnonymizedIp
   IPV4_MASK_BITS = 24

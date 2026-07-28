@@ -7,7 +7,7 @@ class GameVisitTrackerTest < ActiveSupport::TestCase
     game = games(:one)
     request = fake_request(
       headers: { "CF-IPCountry" => "BR" },
-      remote_ip: "189.45.32.77",
+      remote_ip: "203.0.113.77",
       user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
     )
 
@@ -19,7 +19,7 @@ class GameVisitTrackerTest < ActiveSupport::TestCase
     assert_equal game.id, visit.game_id
     assert_equal "visitor-1", visit.visitor_token
     assert visit.created?
-    assert_equal "189.45.32.0", visit.ip_address
+    assert_equal "203.0.113.0", visit.ip_address
     assert_equal "Chrome", visit.browser
     assert_equal "Windows", visit.os
     assert visit.desktop?
