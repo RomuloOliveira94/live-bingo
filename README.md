@@ -57,7 +57,7 @@ Não há cartelas pessoais nem detecção de vitória — isso é proposital. Es
 | Banco de dados | SQLite (todos os ambientes, incluindo produção) |
 | Tempo real / jobs / cache | Solid Cable, Solid Queue, Solid Cache — todos baseados em SQLite, sem Redis |
 | Testes | Minitest + Capybara/Selenium para testes de sistema, `shoulda-matchers` para specs de model |
-| Deploy | Kamal + Docker (Thruster na frente do Puma) |
+| Deploy | Docker (Thruster na frente do Puma); CD contínuo para CapRover via GitHub Actions a cada push em `main`, com Kamal disponível para deploy manual |
 
 ## Como começar
 
@@ -93,6 +93,46 @@ Os quatro comandos estão passando (green) no momento deste README (0 failures, 
 ## Internacionalização
 
 O app é totalmente localizado em pt-BR (padrão) e inglês, incluindo mensagens flash, metadados de SEO e o manifest do PWA. Há um teste dedicado (`test/i18n_hardcoded_strings_test.rb`) que varre todas as views em busca de texto literal não traduzido e falha o build caso algum passe despercebido — além de testes separados que garantem a paridade de chaves entre `pt-BR.yml`/`en.yml` e o comportamento de fallback do locale em português.
+
+## Deploy
+
+O deploy contínuo para produção roda no [CapRover](https://caprover.com/), disparado a cada push em `main` (`.github/workflows/cd.yml`). O workflow só implanta depois de confirmar que o CI (`.github/workflows/ci.yml`) passou na mesma revisão — os 5 checks obrigatórios (`test`, `system-test`, `lint`, `scan_ruby`, `scan_js`) nunca são pulados nem duplicados, só aguardados. Também dá para disparar um redeploy manual pela aba Actions (`workflow_dispatch`). O `captain-definition` na raiz do repositório aponta o CapRover para o `Dockerfile` existente.
+
+### Segredos do GitHub Actions
+
+Configure em Settings → Secrets and variables → Actions do repositório (nenhum destes vive no código):
+
+| Secret | Valor |
+|---|---|
+| `CAPROVER_SERVER` | URL do servidor CapRover, ex.: `https://captain.apps.seu-dominio.com` |
+| `CAPROVER_APP_NAME` | Nome do app cadastrado no CapRover |
+| `CAPROVER_APP_TOKEN` | Token de deploy do app |
+
+Para gerar o token: na aba **Deployment** do app no painel do CapRover, clique em **Enable App Token** e copie o valor gerado.
+
+### Variáveis de ambiente do app no CapRover
+
+Em **App Configs** → **Environmental Variables**, configure:
+
+- `RAILS_MASTER_KEY` — obrigatório em runtime para decriptar `config/credentials.yml.enc` (é o mesmo valor de `config/master.key`, que não está no repositório). Sem ele o container sobe e derruba na inicialização.
+
+### Volume persistente (obrigatório)
+
+O app usa SQLite para o banco principal **e** para Solid Queue, Solid Cache e Solid Cable (veja `config/database.yml`) — os quatro arquivos `.sqlite3` ficam em `storage/`, o que resolve para `/rails/storage` dentro do container (`WORKDIR /rails` no `Dockerfile`).
+
+**Sem um volume persistente mapeado em `/rails/storage`, cada deploy apaga todas as salas e todo o histórico de analytics.** Configure em **App Configs** → **Persistent Directories**:
+
+| Caminho no container | Rótulo (label) |
+|---|---|
+| `/rails/storage` | ex.: `live-bingo-storage` |
+
+### Health check
+
+Configure o health check do CapRover para consultar `/up` — a rota padrão do Rails 8 (`rails/health#show`), já registrada em `config/routes.rb`.
+
+### Porta e TLS
+
+O `Dockerfile` expõe a porta `80` (`EXPOSE 80`), que já é o padrão do CapRover — nenhuma configuração extra de porta é necessária. O CapRover termina o TLS no próprio Nginx e encaminha HTTP simples para o container; como `config.force_ssl` e `config.assume_ssl` estão desligados em `config/environments/production.rb`, isso não causa loop de redirecionamento. Se um dos dois for ativado no futuro, o outro precisa ser ativado junto (ver comentário em `config/deploy.yml`).
 
 ## Licença
 
