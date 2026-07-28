@@ -1,5 +1,4 @@
 <% content_for :title, t("games.show.title") %>
-<% content_for :step_label, (@game.waiting? ? t("nav.step_label.share") : t("nav.step_label.live")) %>
 
 <%= turbo_stream_from @game %>
 
@@ -28,7 +27,7 @@
           <%= t("games.show.active.status_line", code: format_game_code(@game.code)) %>
         </div>
 
-        <div id="last-ball" data-controller="draw-sound">
+        <div id="last-ball" data-controller="draw-sound" data-action="bingo:spin-start@window->draw-sound#play">
           <%= render "games/last_ball", draw: @game.draws.order(position: :desc).first %>
         </div>
 
@@ -36,12 +35,9 @@
           branch), so the draw button only ever renders for an active game —
           no need to juggle a finished? case in its disabled/label logic here. %>
         <% if is_host_of?(@game) && @game.active? %>
-          <% draw_disabled = @game.draws.count >= 75 %>
-          <%= button_to t(draw_disabled ? "games.show.active.all_drawn" : "games.show.active.draw_button"),
-              draw_game_path(code: @game.code), method: :post,
-              disabled: draw_disabled,
-              class: btn_draw_classes(disabled: draw_disabled),
-              data: { turbo_submits_with: t("games.show.active.drawing") } %>
+          <div id="draw-button">
+            <%= render "games/draw_button", game: @game %>
+          </div>
         <% end %>
 
         <div class="flex gap-2 items-center min-h-[38px]">

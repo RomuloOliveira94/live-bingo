@@ -1,37 +1,65 @@
 import { Controller } from "@hotwired/stimulus"
 
+// Plays the draw sound the instant a ball starts spinning — see
+// spin_controller.js's "bingo:spin-start" event (wired via the @window
+// action on this controller's own element) and its comment for why that
+// single event covers both the host (their own click) and every guest (the
+// moment their browser learns a new ball is about to be revealed, before
+// it's applied to the DOM). Triggering here rather than off the eventual
+// DOM mutation is what makes the sound start *during* the animation instead
+// of only once it settles.
+//
+// A guest never clicked anything, so there's no user gesture backing their
+// very first sound — browsers reject that .play() call under autoplay
+// policy. unlockOnFirstInteraction primes the same <audio> element on the
+// guest's first tap/click/keypress anywhere on the page, so draws after that
+// point play normally.
 export default class extends Controller {
   connect() {
     this.audio = new Audio("/sounds/draw-sound.mp3")
     this.audio.preload = "auto"
-    this.previousNumber = this.ballText()
-
-    this.observer = new MutationObserver(() => this.handleChange())
-    this.observer.observe(this.element, { childList: true, subtree: true, characterData: true })
+    this.armUnlock()
   }
 
   disconnect() {
-    this.observer?.disconnect()
+    this.disarmUnlock()
   }
 
-  ballText() {
-    return this.element.textContent.trim()
+  play() {
+    this.audio.currentTime = 0
+    this.audio.play().catch(() => {
+      // Autoplay blocked (a guest who hasn't interacted with the page yet)
+      // — a silent no-op is the correct UX, not a logged error.
+    })
   }
 
-  handleChange() {
-    const current = this.ballText()
-    if (current && current !== this.previousNumber) {
-      this.play()
+  armUnlock() {
+    this.unlock = () => {
+      this.disarmUnlock()
+      // For the HOST, the very first interaction with the page is often the
+      // "Sortear bola" click itself — the same gesture that's about to
+      // trigger a *real* play() via "bingo:spin-start". Priming here
+      // synchronously would call .pause() on this shared <audio> element
+      // moments later and abort that real playback. Deferring the check
+      // gives the real call (if any) a moment to actually start, so this
+      // only ever primes the element when nothing else is already playing.
+      setTimeout(() => {
+        if (!this.audio.paused) return
+
+        this.audio.play().then(() => {
+          this.audio.pause()
+          this.audio.currentTime = 0
+        }).catch(() => {})
+      }, 100)
     }
-    this.previousNumber = current
+    document.addEventListener("pointerdown", this.unlock, { once: true })
+    document.addEventListener("keydown", this.unlock, { once: true })
   }
 
-  async play() {
-    try {
-      this.audio.currentTime = 0
-      await this.audio.play()
-    } catch (e) {
-      // Autoplay blocked — user needs to interact first
-    }
+  disarmUnlock() {
+    if (!this.unlock) return
+    document.removeEventListener("pointerdown", this.unlock)
+    document.removeEventListener("keydown", this.unlock)
+    this.unlock = null
   }
 }

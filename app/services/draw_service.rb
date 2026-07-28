@@ -42,5 +42,12 @@ class DrawService
     Turbo::StreamsChannel.broadcast_update_to(
       @game, target: "board", partial: "games/board", locals: { game: @game }
     )
+    # Keeps the host's draw button in sync (disabled + relabeled once all 75
+    # are drawn) now that GamesController#draw no longer does a full-page
+    # redirect on every draw — a guest's page never has a #draw-button
+    # element, so this is a no-op for them.
+    Turbo::StreamsChannel.broadcast_update_to(
+      @game, target: "draw-button", partial: "games/draw_button", locals: { game: @game }
+    )
   end
 end

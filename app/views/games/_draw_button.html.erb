@@ -1,0 +1,22 @@
+<%# Host's "draw a ball" button. Broadcast-updated after every draw (see
+  DrawService#broadcast_draw) so its disabled state / label track
+  @game.draws.count without a full page reload — otherwise, once the redirect
+  on GamesController#draw went away, the button would keep offering "Sortear
+  bola" forever after the 75th ball instead of flipping to its disabled
+  "all drawn" label.
+
+  Only ever inserted where the viewer has already been established as the
+  host (see the `id="draw-button"` wrapper in show.html.erb, gated on
+  is_host_of? at render time) — a guest's page never has a `#draw-button`
+  element, so a broadcast landing here is a no-op for them.
+  Locals:
+    game - Game instance
+%>
+<% if game.active? %>
+  <% draw_disabled = game.draws.count >= 75 %>
+  <%= button_to t(draw_disabled ? "games.show.active.all_drawn" : "games.show.active.draw_button"),
+      draw_game_path(code: game.code), method: :post,
+      disabled: draw_disabled,
+      class: btn_draw_classes(disabled: draw_disabled),
+      data: { spin_target: "button", turbo_submits_with: t("games.show.active.drawing") } %>
+<% end %>

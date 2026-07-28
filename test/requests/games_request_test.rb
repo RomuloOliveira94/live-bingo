@@ -61,6 +61,35 @@ class GamesRequestTest < ActionDispatch::IntegrationTest
     assert_equal 1, draw.position
   end
 
+  test "host can draw number (turbo_stream format responds with no content, not a redirect)" do
+    # This is what a real button_to click actually sends (Turbo adds the
+    # turbo-stream mime type to the Accept header for any non-safe form
+    # submission) — see GamesController#draw's comment for why a redirect
+    # here broke the draw animation/sound for the host.
+    game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
+    game.update!(status: :active, started_at: Time.current)
+    sign_in_as_host(game)
+
+    assert_difference "Draw.count", 1 do
+      post draw_game_path(code: game.code), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+    end
+
+    assert_response :no_content
+    assert_empty response.body
+  end
+
+  test "draw on waiting game rejected (turbo_stream format still surfaces the flash, without redirecting)" do
+    game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
+    sign_in_as_host(game)
+
+    post draw_game_path(code: game.code), headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_equal Mime[:turbo_stream], response.media_type
+    assert_match I18n.t("draws.errors.game_not_active"), response.body
+    assert_match(/target="flash"/, response.body)
+  end
+
   test "non-host cannot draw" do
     game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
     game.update!(status: :active)

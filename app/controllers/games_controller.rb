@@ -38,11 +38,21 @@ class GamesController < ApplicationController
 
   def draw
     DrawService.call(game: @game)
-    redirect_to game_path(code: @game.code)
+    # No redirect here on purpose: a full-page redirect was the host's own
+    # browser tearing down the spin animation and pre-empting the draw sound
+    # before either could run (see spin_controller.js, draw_sound_controller.js).
+    # The host is subscribed to the same turbo_stream_from @game as every
+    # guest (see show.html.erb), so DrawService's own broadcast already
+    # updates their DOM — responding with no content lets Turbo settle the
+    # form submission in place instead of navigating anywhere.
+    respond_to do |format|
+      format.turbo_stream { head :no_content }
+      format.html { redirect_to game_path(code: @game.code) }
+    end
   rescue DrawService::GameNotActive
-    redirect_to game_path(code: @game.code), alert: t("draws.errors.game_not_active")
+    respond_with_draw_error(t("draws.errors.game_not_active"))
   rescue DrawService::NoNumbersRemaining
-    redirect_to game_path(code: @game.code), alert: t("draws.errors.no_numbers_remaining")
+    respond_with_draw_error(t("draws.errors.no_numbers_remaining"))
   end
 
   def restart
@@ -62,6 +72,20 @@ class GamesController < ApplicationController
   def require_host!
     return if Current.host_of?(@game)
     raise ActionController::RoutingError, "Not host"
+  end
+
+  # Rejected draw (game not active / no numbers left). Rare in practice — the
+  # draw button is hidden/disabled whenever either would be true — but a
+  # stale page or a race between two draws can still hit it, and it must
+  # surface the same flash message whether or not Turbo intercepted the
+  # request.
+  def respond_with_draw_error(message)
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.update("flash", partial: "layouts/flash", locals: { notice: nil, alert: message })
+      end
+      format.html { redirect_to game_path(code: @game.code), alert: message }
+    end
   end
 
   # Kicks everyone connected to the game stream out to the home page: shows

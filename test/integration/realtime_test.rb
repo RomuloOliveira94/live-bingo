@@ -32,7 +32,7 @@ class RealtimeTest < ActionDispatch::IntegrationTest
     assert_response :redirect
 
     targets = streams.map { |stream| stream["target"] }
-    assert_equal %w[last-ball draw-history drawn-count board].sort, targets.sort
+    assert_equal %w[last-ball draw-history drawn-count board draw-button].sort, targets.sort
 
     streams.each do |stream|
       target = stream["target"]

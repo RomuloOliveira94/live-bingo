@@ -1,8 +1,10 @@
 <%# Cage + ball + ring showing the last drawn number.
-  The ball and its idle orbit are always visible; only the ring (letter +
-  number) is hidden until the first ball is drawn. "Spinning" (fast orbit +
-  shake + pulse ring) is toggled by spin_controller.js while a draw request
-  is in flight — see the wrapping element in show.html.erb.
+  The ring (letter + number) is always in the DOM — not just when `draw` is
+  present — so spin_controller.js has a stable element to flicker fake
+  numbers into during the suspense animation; it's kept invisible (not
+  display:none, so nothing reflows when it's revealed) until the first ball
+  is drawn or a spin starts. "Spinning" (fast orbit + shake + pulse ring) is
+  toggled by spin_controller.js — see the wrapping element in show.html.erb.
   Locals:
     draw - Draw instance or nil
 %>
@@ -14,11 +16,9 @@
   </div>
 
   <div class="bingo-ball relative w-[150px] h-[150px] rounded-full flex items-center justify-center animate-ball-pop">
-    <% if draw %>
-      <div class="bingo-ring w-[104px] h-[104px] rounded-full flex items-baseline justify-center gap-[5px]">
-        <span class="font-display font-bold text-xl leading-none"><%= bingo_letter(draw.number) %></span>
-        <span class="font-display font-bold text-[46px] leading-none tracking-[-0.03em]"><%= draw.number %></span>
-      </div>
-    <% end %>
+    <div data-spin-target="ring" class="bingo-ring w-[104px] h-[104px] rounded-full flex items-baseline justify-center gap-[5px] <%= "invisible" unless draw %>">
+      <span data-spin-target="letter" class="font-display font-bold text-xl leading-none pt-[38px]"><%= draw && bingo_letter(draw.number) %></span>
+      <span data-spin-target="number" class="font-display font-bold text-[46px] leading-none tracking-[-0.03em] pt-[32px]"><%= draw&.number %></span>
+    </div>
   </div>
 </div>
