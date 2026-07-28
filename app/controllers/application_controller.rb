@@ -25,7 +25,7 @@ class ApplicationController < ActionController::Base
   end
 
   def load_current_session
-    Current.session = SessionData.cookies_to_session(cookies)
+    Current.session = SessionData.ensure_session(cookies)
   end
 
   def set_session_cookie(session_data)

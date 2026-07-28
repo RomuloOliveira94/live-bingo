@@ -7,11 +7,14 @@ class GamesController < ApplicationController
   def create
     session_data = SessionData.write_new(cookies)
     game = GameCreator.call(host_id: session_data.host_id)
+    GameVisitTracker.call(game: game, request: request, visitor_token: session_data.visitor_token, kind: :created)
     redirect_to game_path(code: game.code)
   end
 
   def show
     raise ActionController::RoutingError, "Game not found" if @game.nil?
+
+    GameVisitTracker.call(game: @game, request: request, visitor_token: current_session&.visitor_token, kind: :joined)
   end
 
   def start

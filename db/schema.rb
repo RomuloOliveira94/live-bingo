@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_28_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_28_020000) do
   create_table "draws", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "game_id", null: false
@@ -20,6 +20,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_010000) do
     t.index ["game_id", "number"], name: "index_draws_on_game_id_and_number", unique: true
     t.index ["game_id", "position"], name: "index_draws_on_game_id_and_position"
     t.index ["game_id"], name: "index_draws_on_game_id"
+  end
+
+  create_table "game_visits", force: :cascade do |t|
+    t.string "browser"
+    t.string "city"
+    t.string "country_code"
+    t.datetime "created_at", null: false
+    t.integer "device_type", default: 3, null: false
+    t.integer "game_id", null: false
+    t.string "ip_address"
+    t.integer "kind", default: 0, null: false
+    t.string "locale"
+    t.string "os"
+    t.string "region"
+    t.datetime "updated_at", null: false
+    t.text "user_agent"
+    t.string "visitor_token", null: false
+    t.index ["country_code"], name: "index_game_visits_on_country_code"
+    t.index ["created_at"], name: "index_game_visits_on_created_at"
+    t.index ["game_id"], name: "index_game_visits_on_game_id"
+    t.index ["visitor_token", "game_id"], name: "index_game_visits_on_visitor_token_and_game_id", unique: true
   end
 
   create_table "games", force: :cascade do |t|
@@ -37,4 +58,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_28_010000) do
   end
 
   add_foreign_key "draws", "games"
+  add_foreign_key "game_visits", "games"
 end

@@ -51,4 +51,56 @@ class SessionDataTest < ActiveSupport::TestCase
     cookies = { bingo_session: "not-json" }
     assert_nil SessionData.cookies_to_session(cookies)
   end
+
+  test "cookies_to_session parses visitor_token when present" do
+    cookies = { bingo_session: { host_id: "abc123", visitor_token: "tok123" }.to_json }
+    data = SessionData.cookies_to_session(cookies)
+    assert_equal "tok123", data.visitor_token
+  end
+
+  test "cookies_to_session tolerates a pre-existing cookie with no visitor_token" do
+    cookies = { bingo_session: { host_id: "abc123" }.to_json }
+    data = SessionData.cookies_to_session(cookies)
+    assert_nil data.visitor_token
+  end
+
+  test "ensure_session mints a visitor_token when there is no cookie at all" do
+    cookies = {}
+    data = SessionData.ensure_session(cookies)
+
+    assert data.visitor_token.present?
+    assert_nil data.host_id
+    assert cookies.key?(:bingo_session)
+  end
+
+  test "ensure_session preserves an existing host_id while minting a missing visitor_token" do
+    cookies = { bingo_session: { host_id: "existing-host" }.to_json }
+    data = SessionData.ensure_session(cookies)
+
+    assert_equal "existing-host", data.host_id
+    assert data.visitor_token.present?
+  end
+
+  test "ensure_session leaves an already-complete cookie untouched" do
+    cookies = { bingo_session: { host_id: "h1", visitor_token: "v1" }.to_json }
+    data = SessionData.ensure_session(cookies)
+
+    assert_equal "h1", data.host_id
+    assert_equal "v1", data.visitor_token
+  end
+
+  test "write_new preserves an existing visitor_token across game creation" do
+    cookies = { bingo_session: { host_id: nil, visitor_token: "existing-visitor" }.to_json }
+    data = SessionData.write_new(cookies)
+
+    assert_equal "existing-visitor", data.visitor_token
+    assert data.host_id.present?
+  end
+
+  test "write_new mints a visitor_token when there was none yet" do
+    cookies = {}
+    data = SessionData.write_new(cookies)
+
+    assert data.visitor_token.present?
+  end
 end

@@ -178,4 +178,52 @@ class GamesRequestTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert flash[:alert].present?
   end
+
+  # Analytics (GameVisit)
+  test "creating a game records a GameVisit with kind created" do
+    assert_difference "GameVisit.count", 1 do
+      post games_path
+    end
+
+    visit = GameVisit.last
+    assert_equal "created", visit.kind
+    assert_equal Game.last.id, visit.game_id
+  end
+
+  test "showing a game records a GameVisit with kind joined" do
+    game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
+    sign_in_as_viewer
+
+    assert_difference "GameVisit.count", 1 do
+      get game_path(code: game.code)
+    end
+
+    visit = GameVisit.last
+    assert_equal "joined", visit.kind
+    assert_equal game.id, visit.game_id
+  end
+
+  test "revisiting the same game as the same visitor does not duplicate the GameVisit row" do
+    game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
+    cookies[:bingo_session] = { host_id: nil, visitor_token: "same-visitor" }.to_json
+
+    get game_path(code: game.code)
+    get game_path(code: game.code)
+
+    assert_equal 1, GameVisit.where(game: game, visitor_token: "same-visitor").count
+  end
+
+  test "a fresh guest visiting the home page gets a visitor_token cookie" do
+    get root_path
+    assert_response :success
+
+    assert cookies[:bingo_session].present?
+    assert SessionData.cookies_to_session(cookies).visitor_token.present?
+  end
+
+  test "showing a 404 game does not record a GameVisit" do
+    assert_no_difference "GameVisit.count" do
+      get game_path(code: "INVALID")
+    end
+  end
 end
