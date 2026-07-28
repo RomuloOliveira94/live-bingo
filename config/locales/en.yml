@@ -1,7 +1,7 @@
 en:
   app:
     name: "Live Bingo!"
-    tagline: "Live bingo draw"
+    tagline: "Live bingo caller"
     wordmark: "Live Bingo!"
 
   nav:
@@ -36,7 +36,7 @@ en:
       confirm_finish: "Are you sure you want to finish? This cannot be undone."
       confirm_restart: "Restart will clear all drawn numbers. Continue?"
       waiting:
-        start_button: "Start draw"
+        start_button: "Start drawing"
         eyebrow: "Room created"
         heading: "Call the crowd"
         guest_heading: "Waiting for the bingo to start"
@@ -51,7 +51,7 @@ en:
         all_drawn: "All balls drawn"
         restart_button: "Restart game"
         recent_label: "Recent"
-        board_label: "Full card"
+        board_label: "Full board"
         count_label: "%{drawn} / 75"
       finished:
         message: "This bingo has ended."

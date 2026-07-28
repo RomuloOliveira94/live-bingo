@@ -1,4 +1,9 @@
 <%# frozen_string_literal: true %>
+<%# Rails::PwaController (railties, not our ApplicationController) serves
+    this, so it never runs our locale-resolving around_action — resolve and
+    scope the locale for this render explicitly instead. %>
+<% manifest_locale = LocaleResolver.call(request) %>
+<% I18n.with_locale(manifest_locale) do %>
 {
   "name": "<%= t('app.name') %>",
   "short_name": "<%= t('app.name') %>",
@@ -28,8 +33,9 @@
   "description": "<%= t('app.tagline') %>",
   "theme_color": "#141414",
   "background_color": "#ffffff",
-  "lang": "pt-BR",
+  "lang": "<%= manifest_locale %>",
   "dir": "ltr",
   "categories": ["entertainment", "games"],
   "orientation": "portrait"
 }
+<% end %>

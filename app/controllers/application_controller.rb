@@ -7,9 +7,22 @@ class ApplicationController < ActionController::Base
 
   helper_method :current_session
 
+  around_action :set_locale
   before_action :load_current_session
 
   private
+
+  # Wraps the whole request (rather than assigning I18n.locale directly) so
+  # it can never leak into the next request handled by the same Puma thread
+  # — I18n.locale is thread-local, not request-local, and threads are reused
+  # across requests.
+  def set_locale
+    I18n.with_locale(resolved_locale) { yield }
+  end
+
+  def resolved_locale
+    @resolved_locale ||= LocaleResolver.call(request)
+  end
 
   def load_current_session
     Current.session = SessionData.cookies_to_session(cookies)
