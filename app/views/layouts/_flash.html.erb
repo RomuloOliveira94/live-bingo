@@ -1,0 +1,24 @@
+<%# Renders the notice/alert banner.
+  Locals:
+    notice - String or nil
+    alert  - String or nil
+
+  This partial is also the target of a Turbo Stream broadcast (see
+  GamesController#finish), so it must not depend on anything besides its
+  locals.
+%>
+<% if notice.present? %>
+  <div class="<%= shared_container_class %> pt-4" role="status" aria-live="polite">
+    <div class="rounded-[14px] bg-bingo-surface border border-bingo-line px-4 py-3 text-bingo-fg font-body text-sm sm:text-base">
+      <%= notice %>
+    </div>
+  </div>
+<% end %>
+
+<% if alert.present? %>
+  <div class="<%= shared_container_class %> pt-4" role="alert" aria-live="assertive">
+    <div class="rounded-[14px] bg-bingo-surface border border-bingo-line px-4 py-3 text-bingo-fg font-body text-sm sm:text-base">
+      <%= alert %>
+    </div>
+  </div>
+<% end %>

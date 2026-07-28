@@ -1,6 +1,8 @@
 module ApplicationHelper
-  def human_game_status(status)
-    I18n.t("statuses.game.#{status}")
+  # Shared horizontal container used by the navbar and every page's main
+  # content, so every screen lines up on the same gutters.
+  def shared_container_class
+    "mx-auto w-full max-w-[980px] px-5"
   end
 
   def format_game_code(code)
