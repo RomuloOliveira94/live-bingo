@@ -39,7 +39,17 @@ Rails.application.configure do
 
   # Set localhost to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
-  config.hosts = nil
+
+  # `config.hosts = nil` (from 3f8f841) disabled Host-header authorization
+  # entirely — IPs and *.localhost/*.test are already allowed by Rails' own
+  # development defaults (see ActionDispatch::HostAuthorization::ALLOWED_HOSTS_IN_DEVELOPMENT),
+  # so the only thing that addition could have been for is reaching the dev
+  # server through a named tunnel host, most plausibly ngrok (the common way
+  # to let a phone/another device join an in-progress game while testing
+  # locally). Assumed here since the original commit doesn't say; swap this
+  # for whatever host/tunnel is actually in use if it's something else.
+  config.hosts << /.*\.ngrok-free\.app/
+  config.hosts << /.*\.ngrok\.io/
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
