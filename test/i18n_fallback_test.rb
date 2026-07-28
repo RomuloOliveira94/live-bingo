@@ -16,7 +16,7 @@ class I18nFallbackTest < ActiveSupport::TestCase
     # The key "app.name" exists in pt-BR.yml
     result = I18n.t("app.name", locale: :"pt-BR")
 
-    assert_equal "Bingo", result
+    assert_equal "Live Bingo!", result
   end
 
   test "missing key in both locales raises now that raise_on_missing_translations is on" do

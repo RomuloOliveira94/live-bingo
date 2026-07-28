@@ -1,0 +1,43 @@
+<%# Compact game-code + copy + share cluster shown in the navbar on every
+  game screen (waiting/active/finished, host or guest — see
+  layouts/_navbar.html.erb). Reuses the same clipboard/share Stimulus
+  controllers as the in-page share block on the waiting screen (see
+  games/_share.html.erb) — this is a second, always-reachable instance of
+  the same two actions, not a replacement for the in-page one, so both
+  coexist on the waiting screen.
+
+  Icon-only buttons (no visible label) keep this compact enough that it
+  never grows the header row, even next to the logo+wordmark at narrow
+  widths — each still carries a screen-reader-only label instead of an
+  aria-* attribute, per this app's i18n guard (see
+  test/i18n_hardcoded_strings_test.rb), which only recognizes text nodes
+  and known attrs, not raw aria-label string literals.
+  Locals:
+    game - Game instance
+%>
+<div class="flex items-center gap-2 shrink-0 min-w-0">
+  <div class="flex items-center gap-1 min-w-0" data-controller="clipboard"
+       data-clipboard-text-value="<%= game.code %>"
+       data-clipboard-prompt-value="<%= t("helpers.clipboard.prompt") %>">
+    <span class="font-display font-bold text-xs tracking-[0.08em] text-bingo-fg truncate">
+      <%= format_game_code(game.code) %>
+    </span>
+    <button type="button" data-clipboard-target="button" data-action="clipboard#copy" data-state="idle"
+            class="inline-flex items-center justify-center w-6 h-6 rounded-full border border-bingo-line text-bingo-muted transition hover:border-bingo-fg hover:text-bingo-fg cursor-pointer shrink-0">
+      <span class="sr-only"><%= t("games.show.share.copy_code") %></span>
+      <%= render "games/copy_icon" %>
+    </button>
+  </div>
+
+  <div data-controller="share"
+       data-share-title-value="<%= t("games.show.share.payload_title") %>"
+       data-share-text-value="<%= t("games.show.share.payload_body", code: game.code) %>"
+       data-share-url-value="<%= game_url_for_sharing(game) %>"
+       data-share-prompt-value="<%= t("helpers.share.prompt") %>">
+    <button type="button" data-share-target="button" data-action="share#share" data-state="idle"
+            class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-bingo-accent text-bingo-on-accent transition hover:brightness-125 cursor-pointer shrink-0">
+      <span class="sr-only"><%= t("games.show.share.share_invite_desktop") %></span>
+      <%= render "games/share_icon" %>
+    </button>
+  </div>
+</div>

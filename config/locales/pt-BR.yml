@@ -1,15 +1,13 @@
 pt-BR:
   app:
-    name: "Bingo"
+    name: "Live Bingo!"
     tagline: "Sorteador de bingo ao vivo"
-    wordmark: "BINGO AO VIVO"
+    wordmark: "Live Bingo!"
 
   nav:
-    step_label:
-      home: "Passo 1 de 3"
+    cta:
+      create: "Criar"
       enter: "Entrar"
-      share: "Passo 2 de 3"
-      live: "Sorteio"
 
   pages:
     home:
@@ -63,7 +61,7 @@ pt-BR:
         copy_code_done: "Código copiado"
         share_invite_desktop: "Compartilhar convite"
         share_invite_mobile: "Compartilhar"
-        payload_title: "Bingo ao vivo"
+        payload_title: "Live Bingo!"
         payload_body: "Entre no meu bingo ao vivo com o código %{code}"
     errors:
       game_not_active: "O bingo precisa estar ativo."

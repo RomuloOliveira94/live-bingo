@@ -1,16 +1,36 @@
 <%#
   App-wide navbar. Not sticky — it scrolls with the page. Left: real logo +
-  wordmark. Right: contextual step label set by each page via
-  `content_for :step_label`.
+  wordmark, always the same. Right side is context-dependent (see
+  ApplicationHelper#navbar_variant):
+    - Home: the two primary CTAs (create/join).
+    - Enter page: just "Criar" — "Entrar" would be redundant while already
+      on the join form.
+    - Any game screen (waiting/active/finished, host or guest): the game's
+      own code with a copy button, plus the share button — always one tap
+      away regardless of where the visitor scrolls to. The waiting screen
+      also keeps its own in-page share controls further down (see
+      games/_waiting.html.erb); this is a compact, coexisting shortcut, not
+      a replacement for those.
 %>
 <header class="border-b border-bingo-line bg-bingo-surface">
-  <div class="<%= shared_container_class %> py-4 flex items-center justify-between">
-    <%= link_to root_path, class: "flex items-center gap-2.5" do %>
+  <div class="<%= shared_container_class %> py-4 flex items-center justify-between gap-3">
+    <%= link_to root_path, class: "flex items-center gap-2.5 shrink-0" do %>
       <%= image_tag "logo.svg", alt: t("app.name"), class: "h-[26px] w-[26px] shrink-0" %>
       <span class="font-display font-bold text-[15px] tracking-[0.02em]"><%= t("app.wordmark") %></span>
     <% end %>
-    <span class="font-display text-xs uppercase tracking-[0.08em] text-bingo-muted">
-      <%= yield(:step_label) %>
-    </span>
+
+    <% case navbar_variant %>
+    <% when :game %>
+      <%= render "games/nav_share", game: @game %>
+    <% when :enter %>
+      <div class="shrink-0">
+        <%= button_to t("nav.cta.create"), games_path, method: :post, class: btn_nav_primary_classes %>
+      </div>
+    <% else %>
+      <div class="flex items-center gap-2 shrink-0">
+        <%= button_to t("nav.cta.create"), games_path, method: :post, class: btn_nav_primary_classes %>
+        <%= link_to t("nav.cta.enter"), enter_path, class: btn_nav_secondary_classes %>
+      </div>
+    <% end %>
   </div>
 </header>

@@ -43,4 +43,18 @@ module ButtonsHelper
 
     "#{base} bg-bingo-accent text-bingo-on-accent border-none cursor-pointer hover:brightness-[.92]"
   end
+
+  # Compact pair used in the navbar (every page, including the live game
+  # screen) — small enough to fit the header row without growing it past the
+  # logo's own height.
+  def btn_nav_primary_classes
+    "font-display inline-flex items-center justify-center py-1.5 px-3.5 rounded-full " \
+    "bg-bingo-accent text-bingo-on-accent font-bold text-xs transition hover:brightness-[.92] cursor-pointer"
+  end
+
+  def btn_nav_secondary_classes
+    "font-display inline-flex items-center justify-center py-1.5 px-3.5 rounded-full " \
+    "border-[1.5px] border-bingo-line bg-transparent text-bingo-fg font-medium text-xs " \
+    "transition hover:border-bingo-fg cursor-pointer"
+  end
 end

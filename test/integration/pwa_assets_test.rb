@@ -6,8 +6,8 @@ class PwaAssetsTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     json = JSON.parse(response.body)
-    assert_equal "Bingo", json["name"]
-    assert_equal "Bingo", json["short_name"]
+    assert_equal "Live Bingo!", json["name"]
+    assert_equal "Live Bingo!", json["short_name"]
     assert_equal "#141414", json["theme_color"]
     assert_equal "#ffffff", json["background_color"]
     assert_equal "standalone", json["display"]

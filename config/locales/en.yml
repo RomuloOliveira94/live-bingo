@@ -1,15 +1,13 @@
 en:
   app:
-    name: "Bingo"
+    name: "Live Bingo!"
     tagline: "Live bingo draw"
-    wordmark: "LIVE BINGO"
+    wordmark: "Live Bingo!"
 
   nav:
-    step_label:
-      home: "Step 1 of 3"
+    cta:
+      create: "Create"
       enter: "Join"
-      share: "Step 2 of 3"
-      live: "Draw"
 
   pages:
     home:
@@ -63,7 +61,7 @@ en:
         copy_code_done: "Code copied"
         share_invite_desktop: "Share invite"
         share_invite_mobile: "Share"
-        payload_title: "Live bingo"
+        payload_title: "Live Bingo!"
         payload_body: "Join my live bingo with code %{code}"
     errors:
       game_not_active: "Bingo must be active."

@@ -21,11 +21,7 @@
        data-share-prompt-value="<%= t("helpers.share.prompt") %>">
     <button type="button" data-share-target="button" data-action="share#share" data-state="idle"
             class="group <%= btn_pill_solid_icon_classes %>">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M12 16V4"></path>
-        <path d="M7 9l5-5 5 5"></path>
-        <path d="M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4"></path>
-      </svg>
+      <%= render "games/share_icon" %>
       <span class="group-data-[state=copied]:hidden">
         <span class="sm:hidden"><%= t("games.show.share.share_invite_mobile") %></span>
         <span class="hidden sm:inline"><%= t("games.show.share.share_invite_desktop") %></span>
