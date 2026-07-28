@@ -14,6 +14,8 @@
   ![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
   ![Action Cable](https://img.shields.io/badge/Action_Cable-WebSockets-430098?style=for-the-badge)
   ![PWA](https://img.shields.io/badge/PWA-Installable-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)
+
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 </div>
 
 ## What is this?
@@ -94,7 +96,7 @@ The app is fully localized in pt-BR (default) and English, including flash messa
 
 ## License
 
-No license file is currently included in this repository, so the code is **not open source** in the legal sense — all rights are reserved by default under copyright law. If you'd like to use this project beyond browsing the source, please open an issue or contact the author via the GitHub profile below.
+This project is licensed under the [MIT License](LICENSE) — free to use, modify, and distribute, with attribution.
 
 ---
 
