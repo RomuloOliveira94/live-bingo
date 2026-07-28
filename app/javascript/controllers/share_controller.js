@@ -1,10 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
+  static targets = ["button"]
   static values = {
     url: String,
     title: String,
-    text: String
+    text: String,
+    prompt: String,
+    resetDelay: { type: Number, default: 1600 }
   }
 
   async share(event) {
@@ -25,9 +28,17 @@ export default class extends Controller {
   async fallbackCopy() {
     try {
       await navigator.clipboard.writeText(this.urlValue)
-      this.dispatch("copied", { prefix: "share" })
+      this.showCopied()
     } catch (e) {
-      prompt("Copie o link:", this.urlValue)
+      prompt(this.promptValue, this.urlValue)
     }
+  }
+
+  showCopied() {
+    const button = this.hasButtonTarget ? this.buttonTarget : this.element
+
+    button.dataset.state = "copied"
+    clearTimeout(this.resetTimeout)
+    this.resetTimeout = setTimeout(() => { button.dataset.state = "idle" }, this.resetDelayValue)
   }
 }

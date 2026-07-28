@@ -1,19 +1,36 @@
+<%# Renders the "copy code" + "share invite" pill buttons for the Share screen.
+  Locals:
+    game - Game instance
+%>
 <% share_url = game_url_for_sharing(game) %>
-<div data-controller="share"
-     data-share-title-value="<%= t('helpers.share.title') %>"
-     data-share-text-value="<%= t('helpers.share.text', code: game.code) %>"
-     data-share-url-value="<%= share_url %>"
-     class="flex flex-wrap gap-2 justify-center">
-  <button type="button"
-          data-action="share#share"
-          class="flex items-center gap-2 px-5 py-2.5 bg-bingo-red text-bingo-on-red rounded-full font-bold text-sm hover:brightness-90">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"></path><path d="M7 9l5-5 5 5"></path><path d="M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4"></path></svg>
-    <%= t("helpers.share.button") %>
-  </button>
-  <div data-controller="clipboard" data-clipboard-text-value="<%= share_url %>">
-    <button type="button" data-action="clipboard#copy" class="px-5 py-2.5 border-[1.5px] border-bingo-red rounded-full text-bingo-red font-medium text-sm hover:bg-bingo-red hover:text-bingo-on-red">
-      <%= t("shared.copy") %>
+<div class="flex flex-wrap justify-center gap-2">
+  <div data-controller="clipboard"
+       data-clipboard-text-value="<%= game.code %>"
+       data-clipboard-prompt-value="<%= t("helpers.clipboard.prompt") %>">
+    <button type="button" data-clipboard-target="button" data-action="clipboard#copy" data-state="idle"
+            class="group <%= btn_pill_outline_classes %>">
+      <span class="group-data-[state=copied]:hidden"><%= t("games.show.share.copy_code") %></span>
+      <span class="hidden group-data-[state=copied]:inline"><%= t("games.show.share.copy_code_done") %></span>
     </button>
-    <span data-clipboard-target="feedback" class="text-xs ml-2 hidden"><%= t("helpers.clipboard.copied") %></span>
+  </div>
+
+  <div data-controller="share"
+       data-share-title-value="<%= t("games.show.share.payload_title") %>"
+       data-share-text-value="<%= t("games.show.share.payload_body", code: game.code) %>"
+       data-share-url-value="<%= share_url %>"
+       data-share-prompt-value="<%= t("helpers.share.prompt") %>">
+    <button type="button" data-share-target="button" data-action="share#share" data-state="idle"
+            class="group <%= btn_pill_solid_icon_classes %>">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 16V4"></path>
+        <path d="M7 9l5-5 5 5"></path>
+        <path d="M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4"></path>
+      </svg>
+      <span class="group-data-[state=copied]:hidden">
+        <span class="sm:hidden"><%= t("games.show.share.share_invite_mobile") %></span>
+        <span class="hidden sm:inline"><%= t("games.show.share.share_invite_desktop") %></span>
+      </span>
+      <span class="hidden group-data-[state=copied]:inline"><%= t("games.show.share.copy_code_done") %></span>
+    </button>
   </div>
 </div>

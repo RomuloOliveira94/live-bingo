@@ -1,23 +1,24 @@
-<%# Renders the last drawn ball with BINGO letter + number.
+<%# Cage + ball + ring showing the last drawn number.
+  The ball and its idle orbit are always visible; only the ring (letter +
+  number) is hidden until the first ball is drawn. "Spinning" (fast orbit +
+  shake + pulse ring) is toggled by spin_controller.js while a draw request
+  is in flight — see the wrapping element in show.html.erb.
   Locals:
     draw - Draw instance or nil
 %>
-<% if draw %>
-  <div class="relative w-44 h-44 sm:w-52 sm:h-52 rounded-full bg-bingo-cage flex items-center justify-center" style="box-shadow: inset 0 0 0 1.5px rgba(20,20,20,0.08);">
-    <%# orbit dots %>
-    <div class="absolute inset-0 animate-orbit">
-      <span class="absolute top-1.5 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-bingo-red opacity-30"></span>
-      <span class="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-bingo-fg opacity-15"></span>
-      <span class="absolute left-1.5 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-bingo-red opacity-25"></span>
-    </div>
-    <%# bola %>
-    <div class="w-32 h-32 sm:w-36 sm:h-36 rounded-full bg-bingo-fg text-bingo-on-red flex flex-col items-center justify-center animate-ball-pop shadow-2xl">
-      <span class="font-bold text-base leading-none pt-9"><%= bingo_letter(draw.number) %></span>
-      <span class="font-bold text-5xl leading-none pt-7 tracking-tight"><%= draw.number %></span>
-    </div>
+<div data-spin-target="cage" class="relative w-[230px] h-[230px] rounded-full bg-bingo-cage border-[1.5px] border-bingo-line flex items-center justify-center">
+  <div class="bingo-orbit absolute inset-[10px] rounded-full animate-orbit">
+    <span class="absolute top-1.5 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-bingo-red opacity-[0.35]" aria-hidden="true"></span>
+    <span class="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-bingo-fg opacity-[0.14]" aria-hidden="true"></span>
+    <span class="absolute left-1.5 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-bingo-red opacity-[0.22]" aria-hidden="true"></span>
   </div>
-<% else %>
-  <div class="w-44 h-44 sm:w-52 sm:h-52 rounded-full bg-bingo-cage flex items-center justify-center" style="box-shadow: inset 0 0 0 1.5px rgba(20,20,20,0.08);">
-    <span class="text-bingo-muted text-2xl">—</span>
+
+  <div class="bingo-ball relative w-[150px] h-[150px] rounded-full flex items-center justify-center animate-ball-pop">
+    <% if draw %>
+      <div class="bingo-ring w-[104px] h-[104px] rounded-full flex items-baseline justify-center gap-[5px]">
+        <span class="font-display font-bold text-xl leading-none"><%= bingo_letter(draw.number) %></span>
+        <span class="font-display font-bold text-[46px] leading-none tracking-[-0.03em]"><%= draw.number %></span>
+      </div>
+    <% end %>
   </div>
-<% end %>
+</div>

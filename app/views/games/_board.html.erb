@@ -3,10 +3,10 @@
     game - Game instance
 %>
 <% drawn_set = game.draws.pluck(:number).to_set %>
-<div class="grid grid-cols-15 gap-1.5">
+<div class="grid grid-cols-10 sm:grid-cols-15 gap-[5px]">
   <% (1..75).each do |n| %>
     <% drawn = drawn_set.include?(n) %>
-    <span class="aspect-square flex items-center justify-center text-xs sm:text-sm font-semibold rounded <%= drawn ? 'bg-bingo-fg text-bingo-on-red' : 'bg-bingo-surface text-bingo-fg' %>">
+    <span class="bingo-cell aspect-square flex items-center justify-center rounded-[7px] border font-display text-xs sm:text-[13px] <%= drawn ? "bg-bingo-red text-bingo-on-red border-bingo-red" : "bg-bingo-surface text-bingo-muted border-bingo-line" %>">
       <%= n %>
     </span>
   <% end %>

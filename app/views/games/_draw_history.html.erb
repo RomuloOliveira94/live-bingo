@@ -1,9 +1,9 @@
-<%# Renders horizontal badges with drawn numbers.
+<%# Renders up to 5 recent draw chips, most recent first, fading opacity.
   Locals:
-    draws - Array/ActiveRecord of Draw instances (most recent first)
+    draws - Array/ActiveRecord of Draw instances (most recent first, max 5)
 %>
-<% draws.each do |draw| %>
-  <span class="inline-flex w-9 h-9 items-center justify-center rounded-full bg-bingo-surface text-bingo-fg text-sm font-semibold">
-    <%= draw.number %>
+<% draws.each_with_index do |draw, index| %>
+  <span class="bingo-chip inline-flex items-center justify-center w-[38px] h-[38px] rounded-full font-display font-bold text-[11px] tracking-[-0.02em]" style="opacity: <%= 1 - index * 0.15 %>">
+    <%= bingo_letter(draw.number) %><%= draw.number %>
   </span>
 <% end %>

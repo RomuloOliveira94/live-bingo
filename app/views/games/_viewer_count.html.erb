@@ -1,1 +1,10 @@
-<%= t("games.show.viewer_count", count: game.viewer_count) %>
+<%# Live counter row: pulsing dot + bold count + label. Also the target
+  GameChannel broadcasts into whenever someone joins or leaves.
+  Locals:
+    game - Game instance
+%>
+<div class="flex items-center justify-center gap-2 font-body text-[15px] text-bingo-muted">
+  <span class="w-2 h-2 rounded-full bg-bingo-fg animate-live-pulse" aria-hidden="true"></span>
+  <strong class="font-display font-bold text-bingo-fg"><%= game.viewer_count %></strong>
+  <span><%= t("games.show.waiting.players_label", count: game.viewer_count) %></span>
+</div>

@@ -1,12 +1,15 @@
 <% content_for :title, t("app.name") %>
+<% content_for :step_label, t("nav.step_label.home") %>
 
-<div class="py-12 flex flex-col items-center gap-7">
-  <div class="text-center max-w-md space-y-2">
-    <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">Crie uma sala de bingo</h1>
-    <p class="text-bingo-muted text-sm sm:text-base leading-relaxed">Crie uma partida e receba um código para compartilhar — ou entre em uma sala existente.</p>
+<div class="pt-11 px-7 pb-12 flex flex-col items-center gap-7">
+  <div class="text-center max-w-[460px] flex flex-col gap-2.5">
+    <h1 class="font-display font-bold text-[34px] leading-[1.05] tracking-[-0.02em] text-balance m-0">
+      <%= t("pages.home.heading_line1") %><br><%= t("pages.home.heading_line2") %>
+    </h1>
+    <p class="font-body text-[15px] leading-relaxed text-bingo-muted text-pretty m-0"><%= t("pages.home.subtitle") %></p>
   </div>
-  <div class="w-full max-w-sm flex flex-col sm:flex-row gap-3">
-    <%= button_to t("pages.home.create"), games_path, method: :post, class: "flex-1 py-4 bg-bingo-red text-bingo-on-red rounded-2xl font-bold text-base hover:brightness-90" %>
-    <%= link_to t("pages.home.enter"), enter_path, class: "flex-1 py-4 border-[1.5px] border-bingo-line rounded-2xl font-medium text-center hover:border-bingo-fg" %>
+  <div class="w-full max-w-[400px] flex flex-wrap gap-2.5">
+    <%= button_to t("pages.home.create"), games_path, method: :post, class: "flex-[1_1_180px] #{btn_primary_classes}" %>
+    <%= link_to t("pages.home.enter"), enter_path, class: "flex-[1_1_140px] text-center #{btn_secondary_outline_classes}" %>
   </div>
 </div>

@@ -12,7 +12,7 @@ class DesignSystemTest < ApplicationSystemTestCase
     visit enter_path
 
     assert_selector "input[name='code']"
-    assert_selector "h1", text: "Entrar em um bingo"
+    assert_selector "h1", text: "Entrar em um bingo", normalize_ws: true
   end
 
   test "waiting host shows dashed code box" do

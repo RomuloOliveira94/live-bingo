@@ -4,7 +4,7 @@ class GamesSystemTest < ApplicationSystemTestCase
   test "home renders 2 buttons" do
     visit root_path
 
-    assert_selector "h1", text: /Crie uma sala de bingo/i
+    assert_selector "h1", text: /Crie uma sala de bingo/i, normalize_ws: true
     assert_selector "button", text: "Criar bingo"
     assert_selector "a", text: "Entrar com código"
   end
@@ -17,7 +17,8 @@ class GamesSystemTest < ApplicationSystemTestCase
     # Should land on waiting room with the game code visible
     assert_selector "#game-code", wait: 5
     assert_selector "button", text: "Iniciar sorteio"
-    assert_text(/Aguardando/i)
+    assert_text(/sala criada/i)
+    assert_text "Chame a galera"
   end
 
   test "host draws number updates view" do
@@ -66,9 +67,9 @@ class GamesSystemTest < ApplicationSystemTestCase
       click_button "Reiniciar partida"
     end
 
-    # Ball should be back to placeholder
+    # Ball should be back to its idle state (no number shown)
     within "#last-ball" do
-      assert_text "—", wait: 5
+      assert_no_text(/\d/, wait: 5)
     end
   end
 
