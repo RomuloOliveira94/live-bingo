@@ -104,11 +104,20 @@ export default class extends Controller {
     window.dispatchEvent(new CustomEvent("bingo:spin-start"))
   }
 
+  // Re-enables the button unless the CURRENT button target — which may
+  // have been swapped mid-spin by the draw-button broadcast (see
+  // buttonTargetConnected) — is already marking the game as fully drawn.
+  // Without this check, this line unconditionally clobbered that
+  // broadcast's server-rendered `disabled` attribute the instant the spin
+  // settled, leaving a clickable-but-mislabeled button after ball 75 (see
+  // _draw_button.html.erb for the data-spin-all-drawn marker itself).
   endSpin() {
     this.spinning = false
     this.stopFlicker()
     if (this.hasCageTarget) this.cageTarget.classList.remove("is-spinning")
-    if (this.hasButtonTarget) this.buttonTarget.disabled = false
+    if (this.hasButtonTarget && this.buttonTarget.dataset.spinAllDrawn !== "true") {
+      this.buttonTarget.disabled = false
+    }
   }
 
   startFlicker() {

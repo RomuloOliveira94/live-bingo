@@ -5,6 +5,11 @@
   bola" forever after the 75th ball instead of flipping to its disabled
   "all drawn" label.
 
+  `data-spin-all-drawn` is a plain marker for spin_controller.js#endSpin —
+  it must NOT unconditionally re-enable the button once the game is fully
+  drawn, or a broadcast landing mid-spin (see buttonTargetConnected) gets
+  clobbered the instant the spin animation settles.
+
   Only ever inserted where the viewer has already been established as the
   host (see the `id="draw-button"` wrapper in show.html.erb, gated on
   is_host_of? at render time) — a guest's page never has a `#draw-button`
@@ -18,5 +23,5 @@
       draw_game_path(code: game.code), method: :post,
       disabled: draw_disabled,
       class: btn_draw_classes(disabled: draw_disabled),
-      data: { spin_target: "button", turbo_submits_with: t("games.show.active.drawing") } %>
+      data: { spin_target: "button", spin_all_drawn: draw_disabled, turbo_submits_with: t("games.show.active.drawing") } %>
 <% end %>
