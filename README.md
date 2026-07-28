@@ -1,9 +1,9 @@
 <div align="center">
-  <img src="public/icon.png" width="120" alt="Live Bingo! logo — a bingo ball marked 33">
+  <img src="public/icon.png" width="120" alt="Logo do Live Bingo! — uma bola de bingo marcada com o número 33">
 
   # Live Bingo!
 
-  **A free, real-time bingo number caller. No app, no signup, no cards — just a room and a shared code.**
+  **Um sorteador de bingo gratuito e em tempo real. Sem aplicativo, sem cadastro, sem cartelas — só uma sala e um código compartilhado.**
 
   [![CI](https://github.com/RomuloOliveira94/live-bingo/actions/workflows/ci.yml/badge.svg)](https://github.com/RomuloOliveira94/live-bingo/actions/workflows/ci.yml)
 
@@ -18,48 +18,48 @@
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 </div>
 
-## What is this?
+## O que é isso?
 
-Live Bingo! is a **sorteador** — a bingo number caller, not a full bingo game. A host opens the app, creates a room, and gets a 6-character code. Guests type that code in from any phone, tablet, or laptop — no download, no account — and watch the same draw unfold live, in sync, as the host calls numbers.
+Live Bingo! é um **sorteador** de bingo — ele sorteia e chama os números, mas não é o jogo de bingo completo. Um anfitrião abre o app, cria uma sala e recebe um código de 6 caracteres. Os convidados digitam esse código em qualquer celular, tablet ou notebook — sem download, sem conta — e acompanham o mesmo sorteio ao vivo, em sincronia, conforme o anfitrião chama os números.
 
-There are no personal cards and no win detection, by design. This app solves the one problem that actually needs solving at a real bingo night: making sure every player, on every device, sees the exact same number at the exact same time. The cards and the shouting are still up to you.
+Não há cartelas pessoais nem detecção de vitória — isso é proposital. Este app resolve o único problema que realmente precisa ser resolvido em uma noite de bingo de verdade: garantir que todo jogador, em qualquer dispositivo, veja exatamente o mesmo número, exatamente ao mesmo tempo. As cartelas e a gritaria ficam por sua conta.
 
-## Features
+## Funcionalidades
 
-- **Real-time draws** — every number call is pushed to all connected guests over Turbo Streams / Action Cable; nobody needs to refresh.
-- **Shared 1–75 board** — one live-updating board of every number, marking what's been drawn, identical for the host and every guest.
-- **Animated ball + draw sound** — each draw spins an animated ball and plays a sound cue.
-- **Installable PWA** — add it to your home screen and launch it like a native app.
-- **Native share & copy-code** — share the room via the OS share sheet on mobile, or copy the code with one tap.
-- **pt-BR / English** — automatic locale detection (Accept-Language, then country), no manual switch needed.
-- **Privacy-conscious analytics** — visit counts for product insight, with IP addresses anonymized before they're ever stored.
-- **Mobile-first** — built and tuned for a phone screen first, scales up cleanly to desktop.
+- **Sorteios em tempo real** — cada número chamado é enviado a todos os convidados conectados via Turbo Streams / Action Cable; ninguém precisa atualizar a página.
+- **Painel compartilhado de 1 a 75** — um painel único, atualizado ao vivo, com todos os números, marcando as bolas já sorteadas, idêntico para o anfitrião e todos os convidados.
+- **Bola animada + som de sorteio** — cada sorteio gira uma bola animada e toca um efeito sonoro.
+- **PWA instalável** — adicione à tela inicial e abra como um app nativo.
+- **Compartilhamento nativo e código com um toque** — compartilhe a sala pelo menu de compartilhamento do sistema no celular, ou copie o código com um toque.
+- **pt-BR / Inglês** — detecção automática de idioma (Accept-Language e depois país), sem precisar trocar manualmente.
+- **Analytics com privacidade em mente** — contagem de visitas para entender o uso do produto, com IPs anonimizados antes de serem armazenados.
+- **Mobile-first** — construído e ajustado primeiro para a tela do celular, escalando bem até o desktop.
 
-## Screenshots
+## Capturas de tela
 
 <table>
   <tr>
-    <td align="center" width="33%"><img src="docs/screenshots/home-mobile.png" alt="Home screen on mobile — create or join a room" width="260"><br><sub>Home — create or join</sub></td>
-    <td align="center" width="33%"><img src="docs/screenshots/waiting-room-mobile.png" alt="Waiting room on mobile, showing the shareable room code" width="260"><br><sub>Waiting room — share the code</sub></td>
-    <td align="center" width="33%"><img src="docs/screenshots/active-game-desktop.png" alt="Live draw in progress on desktop, with the animated ball and 1-75 board" width="320"><br><sub>Live draw — desktop</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/home-mobile.png" alt="Tela inicial no celular — criar ou entrar em uma sala" width="260"><br><sub>Início — criar ou entrar</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/waiting-room-mobile.png" alt="Sala de espera no celular, mostrando o código compartilhável da sala" width="260"><br><sub>Sala de espera — compartilhe o código</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/active-game-desktop.png" alt="Sorteio ao vivo em andamento no desktop, com a bola animada e o painel de 1 a 75" width="320"><br><sub>Sorteio ao vivo — desktop</sub></td>
   </tr>
 </table>
 
-## Tech stack
+## Stack tecnológica
 
-| Layer | Choice |
+| Camada | Escolha |
 |---|---|
-| Language | Ruby 4.0.2 |
+| Linguagem | Ruby 4.0.2 |
 | Framework | Rails 8.1.3 |
-| Front end | Hotwire — Turbo Rails 2.0.23 + Stimulus Rails 1.3.4, via Importmap (**no Node/JS build step**) |
-| Styling | Tailwind CSS v4 (CSS-first `@theme`, via the `tailwindcss-rails` gem) |
+| Front-end | Hotwire — Turbo Rails 2.0.23 + Stimulus Rails 1.3.4, via Importmap (**sem build de Node/JS**) |
+| Estilização | Tailwind CSS v4 (`@theme` CSS-first, via a gem `tailwindcss-rails`) |
 | Assets | Propshaft |
-| Database | SQLite (every environment, including production) |
-| Real-time / jobs / cache | Solid Cable, Solid Queue, Solid Cache — all SQLite-backed, no Redis |
-| Testing | Minitest + Capybara/Selenium for system tests, `shoulda-matchers` for model specs |
-| Deploy | Kamal + Docker (Thruster in front of Puma) |
+| Banco de dados | SQLite (todos os ambientes, incluindo produção) |
+| Tempo real / jobs / cache | Solid Cable, Solid Queue, Solid Cache — todos baseados em SQLite, sem Redis |
+| Testes | Minitest + Capybara/Selenium para testes de sistema, `shoulda-matchers` para specs de model |
+| Deploy | Kamal + Docker (Thruster na frente do Puma) |
 
-## Getting started
+## Como começar
 
 ```bash
 git clone https://github.com/RomuloOliveira94/live-bingo.git
@@ -68,11 +68,11 @@ bin/setup      # bundle install, db:prepare, clears logs/tmp
 bin/dev        # Puma + the Tailwind watcher (see Procfile.dev)
 ```
 
-Then open `http://localhost:3000`.
+Depois, acesse `http://localhost:3000`.
 
-`bin/dev` runs `Procfile.dev` via `foreman`, which starts the Rails server (`web`) and the Tailwind CSS watcher (`css`) side by side — no separate frontend toolchain to install.
+O `bin/dev` executa o `Procfile.dev` via `foreman`, que inicia o servidor Rails (`web`) e o watcher do Tailwind CSS (`css`) lado a lado — sem precisar instalar um toolchain de frontend separado.
 
-## Running tests
+## Executando os testes
 
 ```bash
 bin/rails db:test:prepare test    # 176 runs, 893 assertions
@@ -81,22 +81,22 @@ bin/rubocop                       # style, Rails Omakase config
 bin/brakeman -q                  # static security analysis
 ```
 
-All four are green as of this README (0 failures, 0 offenses, 0 warnings) and run in CI on every push and pull request (see `.github/workflows/ci.yml`).
+Os quatro comandos estão passando (green) no momento deste README (0 failures, 0 offenses, 0 warnings) e rodam no CI a cada push e pull request (veja `.github/workflows/ci.yml`).
 
-## How it works
+## Como funciona
 
-- **No user accounts.** A host's identity is a signed, `httponly` cookie (see `SessionData`) minted the moment they create a room — nothing to sign up for, nothing to remember. The same cookie carries an anonymous per-browser visitor token used for analytics.
-- **One code path for everyone.** When the host draws a ball, the response renders that draw inline for the host **and** broadcasts a Turbo Stream to every other connected guest over Action Cable — so the host isn't a special case with its own rendering logic, it's just the first person to see the update.
-- **Full-page morph refresh.** State transitions (waiting → active → finished) broadcast a `broadcast_refresh_to`, which Turbo re-renders as a morphed full-page refresh rather than a targeted stream, so every guest converges on the exact same markup regardless of which screen they were on.
-- **Locale resolution** checks the request's `Accept-Language` first (so an explicit Portuguese preference always wins), then falls back to the visitor's country via Cloudflare's `CF-IPCountry` header, and finally to the app default (`pt-BR`) if neither signal is present.
+- **Sem contas de usuário.** A identidade do anfitrião é um cookie assinado e `httponly` (veja `SessionData`), gerado no momento em que a sala é criada — nada para cadastrar, nada para lembrar. O mesmo cookie carrega um token de visitante anônimo por navegador, usado para analytics.
+- **Um único fluxo de código para todo mundo.** Quando o anfitrião sorteia uma bola, a resposta renderiza esse sorteio inline para o anfitrião **e** transmite um Turbo Stream para todos os outros convidados conectados via Action Cable — assim o anfitrião não é um caso especial com lógica de renderização própria, é só a primeira pessoa a ver a atualização.
+- **Atualização de página inteira com morph.** As transições de estado (waiting → active → finished) transmitem um `broadcast_refresh_to`, que o Turbo renderiza como uma atualização de página inteira via morph, em vez de um stream direcionado — assim todo convidado converge para exatamente o mesmo markup, independentemente da tela em que estava.
+- **Resolução de idioma (locale)** verifica primeiro o `Accept-Language` da requisição (assim, uma preferência explícita por português sempre prevalece), depois recorre ao país do visitante via header `CF-IPCountry` da Cloudflare, e por fim ao idioma padrão do app (`pt-BR`) caso nenhum dos dois sinais esteja presente.
 
-## Internationalization
+## Internacionalização
 
-The app is fully localized in pt-BR (default) and English, including flash messages, SEO metadata, and the PWA manifest. There's a dedicated test (`test/i18n_hardcoded_strings_test.rb`) that scans every view for un-translated literal copy and fails the build if one slips in — plus separate tests guarding locale-key parity between `pt-BR.yml`/`en.yml` and Portuguese-locale fallback behavior.
+O app é totalmente localizado em pt-BR (padrão) e inglês, incluindo mensagens flash, metadados de SEO e o manifest do PWA. Há um teste dedicado (`test/i18n_hardcoded_strings_test.rb`) que varre todas as views em busca de texto literal não traduzido e falha o build caso algum passe despercebido — além de testes separados que garantem a paridade de chaves entre `pt-BR.yml`/`en.yml` e o comportamento de fallback do locale em português.
 
-## License
+## Licença
 
-This project is licensed under the [MIT License](LICENSE) — free to use, modify, and distribute, with attribution.
+Este projeto está licenciado sob a [Licença MIT](LICENSE) — livre para usar, modificar e distribuir, com atribuição.
 
 ---
 
