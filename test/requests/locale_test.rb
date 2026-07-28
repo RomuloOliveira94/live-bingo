@@ -37,11 +37,17 @@ class LocaleRequestTest < ActionDispatch::IntegrationTest
     assert_select "html[lang=?]", "pt-BR"
   end
 
-  test "falls back to the Accept-Language header when there is no country signal" do
+  # This is the Part A bug end-to-end: no CF-IPCountry header at all (local
+  # dev, or any deployment not sitting behind Cloudflare) and an English
+  # Accept-Language. There's no country signal to fall back to, so this must
+  # render pt-BR (Rule 4), not English — otherwise a Brazilian developer
+  # running `bin/dev` locally with an English browser/OS sees the whole app
+  # in English. This test used to assert "en", consecrating that bug.
+  test "no country signal and an English Accept-Language renders pt-BR, not English" do
     get root_path, headers: { "Accept-Language" => "en-US,en;q=0.9" }
     assert_response :success
 
-    assert_select "html[lang=?]", "en"
+    assert_select "html[lang=?]", "pt-BR"
   end
 
   test "Accept-Language pt wins over a non-Brazil country end-to-end" do
@@ -51,11 +57,25 @@ class LocaleRequestTest < ActionDispatch::IntegrationTest
     assert_select "html[lang=?]", "pt-BR"
   end
 
-  test "Accept-Language en wins over a Brazil country end-to-end" do
+  # This is the exact bug QA reproduced: a Brazilian user (CF-IPCountry: BR)
+  # whose browser/OS is set to English. Accept-Language must no longer
+  # short-circuit ahead of the Brazil country match — this test used to
+  # assert "en", consecrating the bug the user reported.
+  test "Brazil country wins over an English Accept-Language end-to-end" do
     get root_path, headers: { "CF-IPCountry" => "BR", "Accept-Language" => "en-US,en;q=0.9" }
     assert_response :success
 
-    assert_select "html[lang=?]", "en"
+    assert_select "html[lang=?]", "pt-BR"
+  end
+
+  # QA's repro table also included a Portugal case: a Lusophone visitor
+  # outside Brazil must still get pt-BR (Rule 1 — Portuguese Accept-Language
+  # wins over any country, Brazil or not).
+  test "Portugal country with a Portuguese Accept-Language renders pt-BR end-to-end" do
+    get root_path, headers: { "CF-IPCountry" => "PT", "Accept-Language" => "pt-PT" }
+    assert_response :success
+
+    assert_select "html[lang=?]", "pt-BR"
   end
 
   test "locale does not leak onto the next request handled by the same thread" do

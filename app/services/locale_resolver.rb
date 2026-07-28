@@ -1,14 +1,29 @@
-# Picks the request's locale. Accept-Language is consulted FIRST: it's an
-# explicit statement of the visitor's own preference, whereas the
-# CF-IPCountry-derived guess is only a proxy inference (a Lusophone visitor
-# outside Brazil — Portugal, Angola, Mozambique — sending `Accept-Language:
-# pt` wants pt-BR, not the English a bare country lookup would hand them).
-# Country only steps in once Accept-Language has nothing usable to say, and
-# ultimately falls back to config.i18n.default_locale (pt-BR) when neither
-# signal yields anything we recognize.
+# Picks the request's locale. Precedence, in order:
+#
+#   1. Accept-Language's primary language is Portuguese (any region: pt-BR,
+#      pt-PT, bare "pt"...) -> pt-BR. An explicit statement of the visitor's
+#      own preference beats everything else, and it's also how a Lusophone
+#      visitor outside Brazil (Portugal, Angola, Mozambique) sending
+#      `Accept-Language: pt` ends up with Portuguese instead of the English
+#      a bare country lookup would hand them.
+#   2. Otherwise, CF-IPCountry is BR -> pt-BR. A Brazilian visitor whose
+#      browser/OS happens to be set to English (very common — most people
+#      never touch that setting) still gets the Portuguese the product is
+#      actually for, rather than English.
+#   3. Otherwise, a country is present (and, per step 2, isn't BR) -> en.
+#   4. Otherwise (no country signal at all — local dev, or any deployment
+#      not sitting behind Cloudflare) -> config.i18n.default_locale (pt-BR).
+#
+# Deliberate consequence of step 4: an English-speaking visitor hitting a
+# deployment with no Cloudflare in front of it gets pt-BR, not English, since
+# there's no country signal to tell them apart from a Brazilian on the same
+# non-Cloudflare deploy. That's an accepted trade-off, not a bug — the app is
+# Brazilian-first, pt-BR is default_locale, and the one deployment that
+# matters (production) sits behind Cloudflare, where step 3 applies. Do not
+# "fix" this by making an unrecognized/absent country default to :en.
 class LocaleResolver
   BRAZIL = "BR"
-  LOCALE_BY_LANGUAGE = { "pt" => :"pt-BR", "en" => :en }.freeze
+  PORTUGUESE = "pt"
 
   def self.call(request) = new(request).call
 
@@ -17,29 +32,32 @@ class LocaleResolver
   end
 
   def call
-    accept_language_locale || country_locale || I18n.default_locale
+    return :"pt-BR" if portuguese_accept_language?
+    return :"pt-BR" if country_code == BRAZIL
+    return :en if country_code.present?
+
+    I18n.default_locale
   end
 
   private
 
-  def country_locale
-    code = RequestGeo.call(@request)[:country_code]
-    return nil if code.blank?
+  def country_code
+    @country_code ||= RequestGeo.call(@request)[:country_code]
+  end
 
-    code == BRAZIL ? :"pt-BR" : :en
+  def portuguese_accept_language?
+    primary_language == PORTUGUESE
   end
 
   # Deliberately simple: takes the browser's most-preferred language tag
   # (the first one listed) rather than fully weighing every "q=" value —
   # browsers list their top preference first, so this covers the vast
   # majority of real requests without the parsing complexity.
-  def accept_language_locale
+  def primary_language
     header = @request.headers["Accept-Language"]
     return nil if header.blank?
 
     primary_tag = header.split(",").first.to_s.split(";").first.to_s.strip
-    language = primary_tag.split("-").first&.downcase
-
-    LOCALE_BY_LANGUAGE[language]
+    primary_tag.split("-").first&.downcase
   end
 end
