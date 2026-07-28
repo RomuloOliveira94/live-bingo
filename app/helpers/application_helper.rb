@@ -14,6 +14,12 @@ module ApplicationHelper
     "#{request.base_url}#{game_path(code: game.code)}"
   end
 
+  # See config/application.rb's config.x.app.author_github_url for why this
+  # is app config rather than a locale key — it's a URL, not translatable copy.
+  def author_github_url
+    Rails.application.config.x.app.author_github_url
+  end
+
   def is_host_of?(game)
     Current.host_of?(game)
   end

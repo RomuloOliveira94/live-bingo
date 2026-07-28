@@ -1,0 +1,16 @@
+<%# Site-wide footer. Rendered after <main> (see layouts/application.html.erb)
+    so it never competes with a live game screen's board for attention —
+    it's simply the last thing on the page, below the fold on mobile,
+    exactly like the navbar's border-b treatment but mirrored on the other
+    edge. Uses shared_container_class so its text lines up with the navbar
+    and every page's content on the same gutters. %>
+<footer class="border-t border-bingo-line">
+  <div class="<%= shared_container_class %> py-5 text-center">
+    <p class="font-body text-xs text-bingo-muted m-0">
+      <%= t(
+        "layout.footer.credit_html",
+        author_link: link_to(t("layout.footer.author"), author_github_url, target: "_blank", rel: "noopener", class: "text-bingo-fg hover:underline")
+      ) %>
+    </p>
+  </div>
+</footer>

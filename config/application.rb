@@ -28,5 +28,12 @@ module LiveBingo
     config.i18n.default_locale = :"pt-BR"
     config.i18n.available_locales = [ :"pt-BR", :en ]
     config.i18n.fallbacks = { "pt-BR" => :en }
+
+    # Footer author link (see app/views/layouts/_footer.html.erb via
+    # ApplicationHelper#author_github_url) — a URL, not user-facing copy, so
+    # it lives in app config rather than the locale files. PLACEHOLDER: swap
+    # this single line for Rômulo Oliveira's real GitHub profile URL once
+    # it's known; nothing else needs to change.
+    config.x.app.author_github_url = "https://github.com/CHANGEME"
   end
 end

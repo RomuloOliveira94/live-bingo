@@ -9,6 +9,11 @@ pt-BR:
       create: "Criar"
       enter: "Entrar"
 
+  layout:
+    footer:
+      credit_html: "Desenvolvido com ❤️ por %{author_link}"
+      author: "Rômulo Oliveira"
+
   pages:
     home:
       heading_line1: "Crie uma sala"

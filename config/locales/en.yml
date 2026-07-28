@@ -9,6 +9,11 @@ en:
       create: "Create"
       enter: "Join"
 
+  layout:
+    footer:
+      credit_html: "Built with ❤️ by %{author_link}"
+      author: "Rômulo Oliveira"
+
   pages:
     home:
       heading_line1: "Create a bingo"
