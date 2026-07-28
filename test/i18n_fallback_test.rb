@@ -19,9 +19,13 @@ class I18nFallbackTest < ActiveSupport::TestCase
     assert_equal "Bingo", result
   end
 
-  test "missing key in both locales returns translation missing" do
-    result = I18n.t("nonexistent.key", locale: :"pt-BR")
-
-    assert_match(/translation missing/i, result)
+  test "missing key in both locales raises now that raise_on_missing_translations is on" do
+    # Was: I18n.t silently returned a "translation missing" string, so a
+    # typo'd key never failed a test. config/environments/test.rb now sets
+    # raise_on_missing_translations, so this — and any real typo'd key
+    # exercised by the suite — raises instead.
+    assert_raises(I18n::MissingTranslationData) do
+      I18n.t("nonexistent.key", locale: :"pt-BR")
+    end
   end
 end
