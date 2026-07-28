@@ -1,6 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 import { isMuted } from "sound_preference"
 
+// Full-volume playback measured too loud against the rest of the UI.
+// Named constant (rather than a magic number in connect()) so it stays
+// trivially adjustable later.
+const DRAW_SOUND_VOLUME = 0.5
+
 // Plays the draw sound the instant a ball starts spinning — see
 // spin_controller.js's "bingo:spin-start" event (wired via the @window
 // action on this controller's own element) and its comment for why that
@@ -19,6 +24,10 @@ export default class extends Controller {
   connect() {
     this.audio = new Audio("/sounds/draw-sound.mp3")
     this.audio.preload = "auto"
+    // One shared <audio> element backs every draw AND the autoplay-unlock
+    // priming play()/pause() in armUnlock below — setting volume here, once,
+    // covers both, since neither path ever touches .volume itself.
+    this.audio.volume = DRAW_SOUND_VOLUME
     this.armUnlock()
   }
 

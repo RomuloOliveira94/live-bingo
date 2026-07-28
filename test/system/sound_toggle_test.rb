@@ -104,6 +104,33 @@ class SoundToggleSystemTest < ApplicationSystemTestCase
       "unmuting must restore real playback, proving mute never permanently breaks the autoplay unlock"
   end
 
+  test "the draw sound plays at 50% volume, not full volume" do
+    visit root_path
+    click_button "Criar bingo"
+    assert_selector "button", text: "Iniciar sorteio", wait: 5
+    click_button "Iniciar sorteio"
+    assert_text(/ao vivo/i, wait: 5)
+
+    # Consume the autoplay-unlock listener before installing the spy below —
+    # same reason as the muting test above: its own deferred priming play()
+    # call would otherwise show up in window.__playVolumes ahead of the real
+    # draw this test cares about.
+    page.execute_script(<<~JS)
+      document.body.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))
+    JS
+    sleep 0.3 # past armUnlock's own 100ms deferral
+
+    install_play_spy
+
+    click_button "Sortear bola"
+    assert_selector "#last-ball [data-spin-target='number']", wait: 5
+    click_button "Sortear bola"
+    assert_selector "#last-ball [data-spin-target='number']", wait: 5
+
+    assert_equal [ 0.5, 0.5 ], page.evaluate_script("window.__playVolumes"),
+      "the draw sound's shared <audio> element must stay at 50% volume on every play() call, not just the first"
+  end
+
   test "at a 390px viewport, the floating button overlaps neither the ball, the draw button, nor the history chips" do
     visit root_path
     click_button "Criar bingo"
@@ -143,9 +170,11 @@ class SoundToggleSystemTest < ApplicationSystemTestCase
   def install_play_spy
     page.execute_script(<<~JS)
       window.__playCalls = 0
+      window.__playVolumes = []
       const originalPlay = HTMLMediaElement.prototype.play
       HTMLMediaElement.prototype.play = function(...args) {
         window.__playCalls += 1
+        window.__playVolumes.push(this.volume)
         return originalPlay.apply(this, args)
       }
     JS
