@@ -27,6 +27,24 @@ class GameVisitTrackerTest < ActiveSupport::TestCase
     assert_equal I18n.locale.to_s, visit.locale
   end
 
+  test "truncates spoofable geo headers before storing them, like user_agent already is" do
+    game = games(:one)
+    request = fake_request(
+      headers: {
+        "CF-IPCountry" => "B" * 20,
+        "CF-Region" => "R" * 300,
+        "CF-IPCity" => "C" * 300
+      }
+    )
+
+    GameVisitTracker.call(game: game, request: request, visitor_token: "visitor-truncate", kind: :created)
+
+    visit = GameVisit.last
+    assert_equal 10, visit.country_code.length
+    assert_equal 255, visit.region.length
+    assert_equal 255, visit.city.length
+  end
+
   test "does not create a duplicate row for the same visitor and game" do
     game = games(:one)
     request = fake_request

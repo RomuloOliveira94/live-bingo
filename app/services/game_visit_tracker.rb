@@ -43,9 +43,12 @@ class GameVisitTracker
       browser: ua[:browser],
       os: ua[:os],
       device_type: GameVisit.device_types.fetch(ua[:device_type].to_s),
-      country_code: geo[:country_code],
-      region: geo[:region],
-      city: geo[:city],
+      # Bounded the same way user_agent is above: these come straight from
+      # spoofable CF-IPCountry/CF-Region/CF-IPCity headers (see RequestGeo),
+      # so truncate defensively rather than trust header size limits alone.
+      country_code: geo[:country_code]&.truncate(10),
+      region: geo[:region]&.truncate(255),
+      city: geo[:city]&.truncate(255),
       locale: I18n.locale.to_s,
       created_at: now,
       updated_at: now
