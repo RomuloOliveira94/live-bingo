@@ -31,9 +31,7 @@ module LiveBingo
 
     # Footer author link (see app/views/layouts/_footer.html.erb via
     # ApplicationHelper#author_github_url) — a URL, not user-facing copy, so
-    # it lives in app config rather than the locale files. PLACEHOLDER: swap
-    # this single line for Rômulo Oliveira's real GitHub profile URL once
-    # it's known; nothing else needs to change.
-    config.x.app.author_github_url = "https://github.com/CHANGEME"
+    # it lives in app config rather than the locale files.
+    config.x.app.author_github_url = "https://github.com/RomuloOliveira94"
   end
 end
