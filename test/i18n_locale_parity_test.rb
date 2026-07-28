@@ -30,6 +30,23 @@ class I18nLocaleParityTest < ActiveSupport::TestCase
     assert_empty missing_in_pt_br, "Keys present in en.yml but missing from pt-BR.yml: #{missing_in_pt_br.join(', ')}"
   end
 
+  # DrawService#broadcast_draw (and GamesController#draw's inline copy of
+  # the same response) render this key inside the ACTING host's own
+  # I18n.locale and deliver that exact HTML, byte-for-byte, to every
+  # subscriber regardless of their own locale — the same broadcast shape
+  # that made the finish notice and the viewer counter leak locale (see
+  # GamesController#broadcast_finished_notice / GameChannel#broadcast_viewer_count).
+  # It's currently harmless only because pt-BR and en happen to spell this
+  # one identically ("%{drawn} / 75") — this test exists so a future edit
+  # to either locale file (translators reasonably "fixing" the punctuation,
+  # say) fails loudly here instead of silently reopening that bug.
+  test "games.show.active.count_label renders identically across locales (broadcast from the acting host's own locale — see DrawService#broadcast_draw)" do
+    pt_br = I18n.t("games.show.active.count_label", drawn: 5, locale: :"pt-BR")
+    en = I18n.t("games.show.active.count_label", drawn: 5, locale: :en)
+
+    assert_equal pt_br, en
+  end
+
   private
 
   def locale_keys(locale)

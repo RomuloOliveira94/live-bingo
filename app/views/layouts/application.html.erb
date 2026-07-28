@@ -51,6 +51,18 @@
     <%# Empty slot a finished game's broadcast appends a redirect element into. %>
     <div id="redirect-slot"></div>
 
+    <%# Rendered once per visitor, in THEIR OWN resolved locale (see
+      ApplicationController#set_locale) — redirect_controller.js clones this
+      into #flash when GamesController#finish's broadcast arrives, instead
+      of trusting locale-sensitive text pushed over Action Cable. That
+      broadcast is rendered inside the ACTING HOST's own I18n.with_locale
+      and delivered byte-for-byte to every subscriber, so any translated
+      text baked into it would only ever be correct for that one host — see
+      GamesController#broadcast_finished_notice. %>
+    <template id="finished-notice-template">
+      <%= render "layouts/flash", notice: t("games.show.finished.message"), alert: nil %>
+    </template>
+
     <main class="<%= shared_container_class %> pt-7 pb-14">
       <%= yield %>
     </main>

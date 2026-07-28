@@ -1,10 +1,19 @@
-<%# Live counter row: pulsing dot + bold count + label. Also the target
-  GameChannel broadcasts into whenever someone joins or leaves.
+<%# Live counter row: pulsing dot + bold count + label.
+  GameChannel broadcasts only the raw number into #viewer-count-value (see
+  GameChannel#broadcast_viewer_count) — never the pluralized label. That
+  broadcast runs in an Action Cable worker thread with no per-request
+  locale (see LocaleResolver / ApplicationController#set_locale), so any
+  translated text rendered there would always come out at
+  config.i18n.default_locale (pt-BR), regardless of the subscriber's own.
+  Both pluralized forms of the label are rendered once here instead, in
+  THIS visitor's own resolved locale, and viewer_count_controller.js just
+  toggles which one is visible whenever the count changes.
   Locals:
     game - Game instance
 %>
-<div class="flex items-center justify-center gap-2 font-body text-[15px] text-bingo-muted">
+<div class="flex items-center justify-center gap-2 font-body text-[15px] text-bingo-muted" data-controller="viewer-count">
   <span class="w-2 h-2 rounded-full bg-bingo-fg animate-live-pulse" aria-hidden="true"></span>
-  <strong class="font-display font-bold text-bingo-fg"><%= game.viewer_count %></strong>
-  <span><%= t("games.show.waiting.players_label", count: game.viewer_count) %></span>
+  <strong id="viewer-count-value" class="font-display font-bold text-bingo-fg" data-viewer-count-target="count"><%= game.viewer_count %></strong>
+  <span data-viewer-count-target="labelOne" <%= "hidden" unless game.viewer_count == 1 %>><%= t("games.show.waiting.players_label", count: 1) %></span>
+  <span data-viewer-count-target="labelOther" <%= "hidden" if game.viewer_count == 1 %>><%= t("games.show.waiting.players_label", count: 2) %></span>
 </div>

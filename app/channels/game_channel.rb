@@ -22,9 +22,17 @@ class GameChannel < ApplicationCable::Channel
 
   private
 
+  # Broadcasts ONLY the raw number — never rendered/translated text. This
+  # runs in an Action Cable worker thread, entirely outside any request, so
+  # there is no per-request locale to render with (see LocaleResolver /
+  # ApplicationController#set_locale) — rendering the pluralized label here
+  # would always come out at config.i18n.default_locale (pt-BR), regardless
+  # of any given subscriber's own resolved locale. See
+  # games/_viewer_count.html.erb / viewer_count_controller.js for how each
+  # subscriber's own already-localized label reacts to this.
   def broadcast_viewer_count
     Turbo::StreamsChannel.broadcast_update_to(
-      @game, target: "viewer-count", partial: "games/viewer_count", locals: { game: @game.reload }
+      @game, target: "viewer-count-value", html: @game.reload.viewer_count.to_s
     )
   end
 end

@@ -35,6 +35,21 @@ class WaitingScreenRequestTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?]", finish_game_path(code: game.code), count: 0
   end
 
+  # Regression: GameChannel's viewer_count broadcast only ever pushes the
+  # raw number (see GameChannel#broadcast_viewer_count and its comment) —
+  # the pluralized label text comes from what each visitor's OWN GET
+  # request already rendered, in their OWN resolved locale, right here.
+  test "viewer count's pluralized label renders in the visitor's own resolved locale" do
+    game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
+    sign_in_as_viewer
+
+    get game_path(code: game.code), headers: { "CF-IPCountry" => "US" }
+    assert_response :success
+
+    assert_select "[data-viewer-count-target='labelOne']", text: I18n.t("games.show.waiting.players_label", count: 1, locale: :en)
+    assert_select "[data-viewer-count-target='labelOther']", text: I18n.t("games.show.waiting.players_label", count: 2, locale: :en)
+  end
+
   test "host on the waiting screen still sees the start button and eyebrow heading" do
     game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
     sign_in_as_host(game)

@@ -110,15 +110,23 @@ class GamesController < ApplicationController
     end
   end
 
-  # Kicks everyone connected to the game stream out to the home page: shows
-  # the "bingo encerrado" notice in the layout's flash region, then appends a
-  # redirect element (see redirect_controller.js) that Turbo.visit()s
-  # everyone away after a short delay so they have time to read it.
+  # Kicks everyone connected to the game stream out to the home page: appends
+  # a redirect element (see redirect_controller.js) that shows the "bingo
+  # encerrado" notice — in each subscriber's OWN locale, not the acting
+  # host's — then Turbo.visit()s everyone away after a short delay so they
+  # have time to read it.
+  #
+  # Deliberately does NOT broadcast the flash text itself. This whole
+  # request runs inside the acting host's own I18n.with_locale (see
+  # ApplicationController#set_locale), and Turbo::StreamsChannel delivers
+  # whatever gets rendered here byte-for-byte to every subscriber — so an
+  # English-resolved host finishing the game used to broadcast an English
+  # notice to every pt-BR guest, and vice versa. The redirect element itself
+  # carries no translatable text (just url/delay), and redirect_controller.js
+  # fills in the notice client-side from a template each visitor already
+  # rendered themselves, in their own locale (see
+  # layouts/application.html.erb's #finished-notice-template).
   def broadcast_finished_notice
-    Turbo::StreamsChannel.broadcast_update_to(
-      @game, target: "flash", partial: "layouts/flash",
-             locals: { notice: t("games.show.finished.message"), alert: nil }
-    )
     Turbo::StreamsChannel.broadcast_append_to(
       @game, target: "redirect-slot", partial: "games/redirect",
              locals: { url: root_path, delay: FINISHED_REDIRECT_DELAY_MS }

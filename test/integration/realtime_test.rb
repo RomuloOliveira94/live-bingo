@@ -97,7 +97,31 @@ class RealtimeTest < ActionDispatch::IntegrationTest
     assert_equal "finished", game.status
 
     actions_by_target = streams.each_with_object({}) { |stream, memo| memo[stream["target"]] = stream["action"] }
-    assert_equal "update", actions_by_target["flash"]
+    # No "flash" broadcast (see below) — only the locale-agnostic
+    # redirect-slot append. The notice itself is shown client-side, from a
+    # template each subscriber already rendered in their own locale (see
+    # redirect_controller.js).
+    assert_nil actions_by_target["flash"]
     assert_equal "append", actions_by_target["redirect-slot"]
+  end
+
+  # Regression for the locale-leaking finish notice: GamesController#finish
+  # used to broadcast the flash notice's rendered HTML — in the ACTING
+  # host's own resolved locale — byte-for-byte to every subscriber. An
+  # English-resolved host finishing the game would broadcast "This bingo has
+  # ended." to every pt-BR guest, and vice versa. Now it broadcasts no
+  # translatable text at all for the finish notice.
+  test "finish's broadcast never carries the acting host's locale-rendered notice text" do
+    game = GameCreator.call(host_id: SessionData.host_id_for_new_game)
+    game.update!(status: :active)
+    sign_in_as_host(game)
+
+    streams = capture_turbo_stream_broadcasts(game) do
+      post finish_game_path(code: game.code), headers: { "CF-IPCountry" => "US" }
+    end
+
+    broadcast_html = streams.map(&:to_html).join
+    assert_no_match(/#{Regexp.escape(I18n.t('games.show.finished.message', locale: :en))}/, broadcast_html)
+    assert_no_match(/#{Regexp.escape(I18n.t('games.show.finished.message', locale: :"pt-BR"))}/, broadcast_html)
   end
 end
