@@ -44,6 +44,20 @@ class LocaleRequestTest < ActionDispatch::IntegrationTest
     assert_select "html[lang=?]", "en"
   end
 
+  test "Accept-Language pt wins over a non-Brazil country end-to-end" do
+    get root_path, headers: { "CF-IPCountry" => "US", "Accept-Language" => "pt,en;q=0.8" }
+    assert_response :success
+
+    assert_select "html[lang=?]", "pt-BR"
+  end
+
+  test "Accept-Language en wins over a Brazil country end-to-end" do
+    get root_path, headers: { "CF-IPCountry" => "BR", "Accept-Language" => "en-US,en;q=0.9" }
+    assert_response :success
+
+    assert_select "html[lang=?]", "en"
+  end
+
   test "locale does not leak onto the next request handled by the same thread" do
     get root_path, headers: { "CF-IPCountry" => "US" }
     assert_select "html[lang=?]", "en"

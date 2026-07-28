@@ -1,9 +1,11 @@
-# Picks the request's locale: Brazil gets pt-BR (unchanged default
-# experience), everywhere else gets en. Falls back to the browser's
-# Accept-Language header when Cloudflare's country header is missing or
-# unusable (no Cloudflare in front, local dev, CF-IPCountry is XX/T1), and
-# ultimately to config.i18n.default_locale (pt-BR) when even that yields
-# nothing we recognize.
+# Picks the request's locale. Accept-Language is consulted FIRST: it's an
+# explicit statement of the visitor's own preference, whereas the
+# CF-IPCountry-derived guess is only a proxy inference (a Lusophone visitor
+# outside Brazil — Portugal, Angola, Mozambique — sending `Accept-Language:
+# pt` wants pt-BR, not the English a bare country lookup would hand them).
+# Country only steps in once Accept-Language has nothing usable to say, and
+# ultimately falls back to config.i18n.default_locale (pt-BR) when neither
+# signal yields anything we recognize.
 class LocaleResolver
   BRAZIL = "BR"
   LOCALE_BY_LANGUAGE = { "pt" => :"pt-BR", "en" => :en }.freeze
@@ -15,7 +17,7 @@ class LocaleResolver
   end
 
   def call
-    country_locale || accept_language_locale || I18n.default_locale
+    accept_language_locale || country_locale || I18n.default_locale
   end
 
   private
