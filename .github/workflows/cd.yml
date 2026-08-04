@@ -87,7 +87,7 @@ jobs:
         run: tar -cf deploy.tar --exclude='.git' --exclude='deploy.tar' .
 
       - name: Deploy to CapRover
-        uses: caprover/deploy-from-github@v1.0.1
+        uses: caprover/deploy-from-github@v1.2.0
         with:
           server: '${{ secrets.CAPROVER_SERVER }}'
           app: '${{ secrets.CAPROVER_APP_NAME }}'
