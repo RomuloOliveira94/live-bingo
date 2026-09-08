@@ -76,7 +76,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Tarball method (caprover/deploy-from-github v1.0.1): pack the repo
       # plus captain-definition into ./deploy.tar and hand it to the action,
