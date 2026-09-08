@@ -96,7 +96,40 @@ O app é totalmente localizado em pt-BR (padrão) e inglês, incluindo mensagens
 
 ## Deploy
 
-O deploy contínuo para produção roda no [CapRover](https://caprover.com/), disparado a cada push em `main` (`.github/workflows/cd.yml`). O workflow só implanta depois de confirmar que o CI (`.github/workflows/ci.yml`) passou na mesma revisão — os 5 checks obrigatórios (`test`, `system-test`, `lint`, `scan_ruby`, `scan_js`) nunca são pulados nem duplicados, só aguardados. Também dá para disparar um redeploy manual pela aba Actions (`workflow_dispatch`). O `captain-definition` na raiz do repositório aponta o CapRover para o `Dockerfile` existente.
+O deploy contínuo para produção roda no [CapRover](https://caprover.com/), disparado a cada push em `main` (`.github/workflows/cd.yml`). A `main` é protegida: um Pull Request só entra com uma aprovação e com os 5 checks do CI (`test`, `system-test`, `lint`, `scan_ruby`, `scan_js`) verdes, e o `.github/CODEOWNERS` já pede a revisão automaticamente. Depois do merge o gate se repete no próprio workflow: ele só implanta depois de confirmar que o CI (`.github/workflows/ci.yml`) passou **na mesma revisão** — esses 5 checks nunca são pulados nem duplicados, só aguardados. Também dá para disparar um redeploy manual pela aba Actions (`workflow_dispatch`).
+
+Passado o gate, a imagem é construída **no próprio runner do GitHub Actions** (`docker/build-push-action`, a partir do `Dockerfile` da raiz) e publicada no GitHub Container Registry em duas tags:
+
+| Tag | Para quê |
+|---|---|
+| `ghcr.io/romulooliveira94/live-bingo:<sha7>` | Tag imutável (7 primeiros caracteres do commit). É ela que o CapRover recebe — e a que se usa para rollback |
+| `ghcr.io/romulooliveira94/live-bingo:latest` | Ponteiro para o último **build** da `main` — não necessariamente o que está no ar: um rollback troca a imagem do app sem mexer nesta tag. Conveniência para `docker pull` manual |
+
+O CapRover **não constrói mais nada**: o workflow passa o nome da imagem para o `caprover/deploy-from-github` e o servidor só faz `docker pull`. Quem publica o pacote é o `GITHUB_TOKEN` do próprio workflow (o job declara `permissions: packages: write`) — nenhum PAT fica guardado no repositório. O cache de camadas do build fica no cache do Actions (`type=gha`), então um `Gemfile.lock` inalterado pula o `bundle install` na próxima execução.
+
+⚠️ **Um run verde do CD não prova que o deploy subiu.** O step do CapRover retorna assim que o servidor *aceita* a requisição — deploy por App Token não transmite o log de build de volta —, então um `docker pull` que falha (PAT do registry expirado, registry errado) ou um container em crash loop aparecem **só** no painel do CapRover, nas abas **Deployment** e **App Logs**; o run do Actions continua verde. Depois de cada deploy, confira o `/up` do app.
+
+O `captain-definition` na raiz continua versionado, mas **não é mais usado pelo CD**: ele serve apenas para um deploy manual por tarball (`caprover deploy`), em que o CapRover constrói a imagem no servidor.
+
+### Registro do ghcr.io no CapRover (obrigatório)
+
+Pacotes do GitHub Container Registry nascem **privados**, então o servidor precisa de credencial para baixar a imagem. Em **Cluster → Docker Registries** → *Add Remote Registry*:
+
+| Campo | Valor |
+|---|---|
+| Registry Domain | `ghcr.io` |
+| Username | seu usuário do GitHub (`RomuloOliveira94`) |
+| Password | um PAT clássico com o escopo `read:packages` |
+
+Sem isso o deploy falha no `docker pull` com `unauthorized`. (Alternativa: tornar o pacote público em **Packages** → o pacote → *Package settings* → *Change visibility*.)
+
+### Rollback
+
+As tags por SHA ficam todas no ghcr.io, então voltar uma versão não exige rebuild. No painel do CapRover, aba **Deployment** do app → **Deploy via ImageName**, informe a tag antiga e implante:
+
+```
+ghcr.io/romulooliveira94/live-bingo:<sha7-antigo>
+```
 
 ### Segredos do GitHub Actions
 
@@ -110,11 +143,18 @@ Configure em Settings → Secrets and variables → Actions do repositório (nen
 
 Para gerar o token: na aba **Deployment** do app no painel do CapRover, clique em **Enable App Token** e copie o valor gerado.
 
+Não há secret para o `ghcr.io` — o push da imagem usa o `GITHUB_TOKEN` que o próprio Actions injeta. Se algum dia uma policy de organização bloquear a escrita de packages pelo `GITHUB_TOKEN`, crie um PAT clássico com `write:packages`, guarde-o em `secrets.ACCESS_TOKEN` e troque a senha do step de login do `cd.yml`.
+
 ### Variáveis de ambiente do app no CapRover
 
 Em **App Configs** → **Environmental Variables**, configure:
 
-- `RAILS_MASTER_KEY` — obrigatório em runtime para decriptar `config/credentials.yml.enc` (é o mesmo valor de `config/master.key`, que não está no repositório). Sem ele o container sobe e derruba na inicialização.
+| Variável | Obrigatória? | Para quê |
+|---|---|---|
+| `RAILS_MASTER_KEY` | **Sim** | Decripta `config/credentials.yml.enc` em runtime (é o mesmo valor de `config/master.key`, que não está no repositório). Sem ela o container sobe e derruba na inicialização. |
+| `APP_HOST` | **Sim** | O domínio sob o qual o app está publicado, ex.: `live-bingo.seu-dominio.com`. Alimenta o `config.hosts` de `config/environments/production.rb`, que liga a proteção contra DNS rebinding e ataques de header `Host`. O domínio não está no código de propósito: este repositório é público. Enquanto estiver em branco o app funciona, mas sem essa proteção — o `config.hosts` fica no array vazio do padrão e o `ActionDispatch::HostAuthorization` nem chega a ser inserido. O `/up` é isento, então o health check do CapRover continua respondendo mesmo se o valor estiver errado. |
+| `SOLID_QUEUE_IN_PUMA` | Não (ainda) | Sobe o supervisor do Solid Queue dentro do Puma (`config/puma.rb`) — é assim que esta app rodaria jobs em produção, sem processo worker separado. Hoje não há nenhum job (`app/jobs/` só tem o `ApplicationJob`) e nenhuma chamada a `perform_later`/`deliver_later`, então não faz diferença; no dia em que o primeiro job aparecer, sem ela ele fica enfileirado e nunca executa. |
+| `RAILS_LOG_LEVEL` | Não | Padrão `info` (`config/environments/production.rb`). |
 
 ### Volume persistente (obrigatório)
 
@@ -124,7 +164,13 @@ O app usa SQLite para o banco principal **e** para Solid Queue, Solid Cache e So
 
 | Caminho no container | Rótulo (label) |
 |---|---|
-| `/rails/storage` | ex.: `live-bingo-storage` |
+| `/rails/storage` | `live-bingo-storage` |
+
+⚠️ **O rótulo precisa ser único em toda a instância do CapRover.** O CapRover converte o rótulo no volume Docker `captain--<rótulo>` **sem prefixar o nome do app**, então todos os apps da mesma instância dividem esse namespace. Um rótulo genérico como `db` ou `storage` monta em `/rails/storage` o volume `captain--db`, que provavelmente já é de outro app: o `db:prepare` do boot encontra um banco alheio já inicializado, tenta rodar as migrations desta app em cima dele e morre com um erro de tabela já existente, deixando o container em crash loop. Se não houvesse colisão de nomes de tabela seria pior — as migrations desta app seriam aplicadas no banco do outro app. Por isso o rótulo em uso aqui é `live-bingo-storage`.
+
+Se isso já tiver acontecido, troque o rótulo por um único: o CapRover passa a montar um volume novo e vazio e o `db:prepare` cria os bancos desta app do zero. No volume compartilhado ficam para trás os `production_queue.sqlite3`, `production_cache.sqlite3` e `production_cable.sqlite3` que esta app criou — remova-os se o outro app não usar esses nomes.
+
+O `bin/docker-entrypoint` roda `db:prepare` a cada boot, então o primeiro deploy cria e migra os quatro bancos sozinho.
 
 ### Health check
 
@@ -132,7 +178,9 @@ Configure o health check do CapRover para consultar `/up` — a rota padrão do 
 
 ### Porta e TLS
 
-O `Dockerfile` expõe a porta `80` (`EXPOSE 80`), que já é o padrão do CapRover — nenhuma configuração extra de porta é necessária. O CapRover termina o TLS no próprio Nginx e encaminha HTTP simples para o container; como `config.force_ssl` e `config.assume_ssl` estão desligados em `config/environments/production.rb`, isso não causa loop de redirecionamento. Se um dos dois for ativado no futuro, o outro precisa ser ativado junto (ver comentário em `config/deploy.yml`).
+O `Dockerfile` expõe a porta `80` (`EXPOSE 80`, servida pelo Thruster), que já é o padrão do CapRover — nenhuma configuração extra de porta é necessária. O CapRover termina o TLS no próprio Nginx e encaminha HTTP simples para o container, e é justamente por isso que `config.assume_ssl` e `config.force_ssl` estão **ligados** em `config/environments/production.rb` — os dois juntos, que é a única combinação correta atrás de um proxy que termina TLS.
+
+Foi essa mudança que corrigiu o 422 em todo request não-GET (commit `5b3c544`): sem `assume_ssl`, o Rails monta `request.base_url` como `http://…`, que nunca casa com o header `Origin` `https://` do navegador, e a checagem de mesma origem do CSRF rejeita o request. E não há loop de redirecionamento porque `assume_ssl` faz `request.ssl?` retornar sempre `true`, então o branch de redirect do `ActionDispatch::SSL` nunca dispara — nem no `/up`, o que dispensa o `config.ssl_options` de exclusão que o Rails deixa comentado ali.
 
 ## Licença
 
