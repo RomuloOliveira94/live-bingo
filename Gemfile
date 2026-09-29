@@ -12,7 +12,7 @@ gem "json", "~> 2.21", ">= 2.21.2"
 gem "kamal", require: false
 gem "propshaft"
 gem "puma", ">= 5.0"
-gem "rails", "~> 8.1.3"
+gem "rails", "~> 8.1.4"
 gem "rdoc", "8.0.0"
 # image_processing 2.x turned mini_magick/ruby-vips into soft dependencies, so
 # the vips backend Active Storage defaults to under config.load_defaults 8.1
