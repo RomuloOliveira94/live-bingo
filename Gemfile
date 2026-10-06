@@ -13,7 +13,7 @@ gem "kamal", require: false
 gem "propshaft"
 gem "puma", ">= 5.0"
 gem "rails", "~> 8.1.3"
-gem "rdoc", "8.0.0"
+gem "rdoc", "8.1.0"
 # image_processing 2.x turned mini_magick/ruby-vips into soft dependencies, so
 # the vips backend Active Storage defaults to under config.load_defaults 8.1
 # has to be declared here. It is a boot requirement, not just a per-`variant`
