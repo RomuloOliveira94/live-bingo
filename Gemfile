@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 
 gem "bootsnap", require: false
-gem "image_processing", "~> 2.1"
+gem "image_processing", "~> 2.2"
 gem "importmap-rails"
 gem "jbuilder"
 # Transitive dependency, floored for CVE-2026-71847 (GHSA-9hj4-r449-hfvc) and
