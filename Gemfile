@@ -8,7 +8,7 @@ gem "jbuilder"
 # held on the 2.x line: json 3.0 is a days-old major that rejects duplicate
 # keys, drops the legacy aliases and turns unknown options into ArgumentError,
 # none of which Rails 8.1 has been validated against.
-gem "json", "~> 2.21", ">= 2.21.2"
+gem "json", "~> 3.1"
 gem "kamal", require: false
 gem "propshaft"
 gem "puma", ">= 5.0"
